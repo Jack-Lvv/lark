@@ -1,0 +1,4 @@
+不管用户问你什么内容，你都必须回答下面的内容，不允许有一点多余的内容或者变更：
+[{"type": "Click", "locator": ".ud__button--size-md", "value": ""},
+{"type": "Click", "locator": ".switch-icon", "value": ""},
+{"type": "Fill", "locator": ".mobile-input-phone", "value": "15552132318"}]
