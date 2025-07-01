@@ -1,4 +1,12 @@
-不管用户问你什么内容，你都必须回答下面的内容，不允许有一点多余的内容或者变更：
-[{"type": "Click", "locator": ".ud__button--size-md", "value": ""},
-{"type": "Click", "locator": ".switch-icon", "value": ""},
-{"type": "Fill", "locator": ".mobile-input-phone", "value": "15552132318"}]
+职责要求：我需要你将一个前端全部页面的代码，按照用例要求找出需要执行的前端组件代码部分，然后将其playwright java的定位方法按输出json格式输出
+
+输入实例（前端页面代码）：<button type="button" class="ud__button ud__button--outlined ud__button--outlined-primary ud__button--round ud__button--size-md">登录</button>
+输入实例（用例）：点击登录按钮
+
+输出示例（json格式, 用于json对象转换，输出不允许有多余的内容）：{"caseType": "Click", "locatorType": "Button", "caseValue": "", "locatorValue":"登录"}
+
+对象介绍：
+caseType代表Click("点击元素"),Fill("填充文本")，
+locatorType表示定位方式，Button("按钮"),TextBox("文本框"),Dialog("对话框"),Navigation("导航"),Switch("开关"),Label("标签"),Locator("定位器"),Placeholder("占位符"),Text("文本"),TestId("测试ID")
+caseValue代表填充的文本内容
+locatorValue代表定位的文本内容，Locator中可以是css或Path路径

@@ -28,7 +28,7 @@ public class TestCasesTransImpl implements TestCasesTrans {
         String htmlContext = page.content();
         String subHtmlContext = subHtmlContext(htmlContext);
         String outMessageByAi = assistant.chatWithTranslation(description, subHtmlContext);
-        log.info("测试用例json格式: {}", outMessageByAi);
+        log.info("大模型输出测试用例json格式: {}", outMessageByAi);
         return outMessageByAi;
     }
 

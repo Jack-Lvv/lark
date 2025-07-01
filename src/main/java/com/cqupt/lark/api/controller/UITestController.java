@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +56,16 @@ public class UITestController {
                 List<TestResult> testResults = new ArrayList<>();
 
                 while (index < cases.length && failureTimes <= maxFailureTimes) {
+                    log.info("正在执行第{}个用例: {}", index + 1, cases[index]);
 
                     String standardCases = testCasesTrans.trans(cases[index], page);
-                    TestCase testCase = testCasesTrans.transToJson(standardCases);
+                    TestCase testCase = new TestCase();
+                    try {
+                        testCase = testCasesTrans.transToJson(standardCases);
+                    } catch (Exception e) {
+                        failureTimes++;
+                        log.error("第{}个用例json转换失败: {}", index + 1, e.getMessage());
+                    }
 
                     TestResult testResult = new TestResult();
                     if (executor.execute(testCase, page)) {

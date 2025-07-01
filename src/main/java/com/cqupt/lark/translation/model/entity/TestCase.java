@@ -2,7 +2,6 @@ package com.cqupt.lark.translation.model.entity;
 
 import com.cqupt.lark.translation.model.enums.CaseType;
 import com.cqupt.lark.translation.model.enums.LocatorType;
-import com.microsoft.playwright.Locator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

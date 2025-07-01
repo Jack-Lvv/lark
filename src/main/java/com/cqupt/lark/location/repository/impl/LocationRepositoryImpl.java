@@ -50,6 +50,19 @@ public class LocationRepositoryImpl implements LocationRepository {
                 new Page.GetByRoleOptions().setName(text).setExact(false));
     }
 
+    @Override
+    public Locator getLabelByText(String text, Page page) {
+        return page.getByLabel(text);
+    }
 
+    @Override
+    public Locator getPlaceholderByText(String text, Page page) {
+        return page.getByPlaceholder(text);
+    }
+
+    @Override
+    public Locator getTestIdByText(String text, Page page) {
+        return page.getByTestId(text);
+    }
 
 }

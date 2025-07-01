@@ -24,4 +24,10 @@ public interface LocationRepository {
     Locator getNavigationByText(String text, Page page);
 
     Locator getSwitchByText(String text, Page page);
+
+    Locator getLabelByText(String text, Page page);
+
+    Locator getPlaceholderByText(String text, Page page);
+
+    Locator getTestIdByText(String text, Page page);
 }
