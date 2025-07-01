@@ -51,4 +51,29 @@ public class VisionAssistantImpl implements VisionAssistant {
         ImageContent imageContent = ImageContent.from(base64Data, "image/png");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(InputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
+
+    @Override
+    public String chatWithValidate(String inputMessage, byte[] imageData) throws IOException {
+
+        OpenAiChatModel model = OpenAiChatModel.builder()
+                .baseUrl(baseUrl)
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .logRequests(true)
+                .logResponses(true)
+                .build();
+        String prompt;
+
+        try (InputStream inputStream = AssistantImpl.class
+                .getClassLoader()
+                .getResourceAsStream("prompt/validate.txt")) {
+            if (inputStream == null) {
+                throw new IOException("文件不存在！");
+            }
+            prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        String base64Data = Base64.getEncoder().encodeToString(imageData);
+        ImageContent imageContent = ImageContent.from(base64Data, "image/png");
+        return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
+    }
 }

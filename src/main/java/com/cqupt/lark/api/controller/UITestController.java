@@ -4,7 +4,6 @@ import com.cqupt.lark.api.model.dto.RequestDTO;
 import com.cqupt.lark.api.model.vo.ResponseVO;
 import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.execute.service.Executor;
-import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.cqupt.lark.translation.service.TestCasesTrans;
 import com.cqupt.lark.util.OffsetCorrectUtils;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +37,8 @@ public class UITestController {
 
     @PostMapping("/api/test")
     public ResponseVO test(@RequestBody RequestDTO request) {
-        log.info("request: {}", request.getUrl());
-        log.info("description: {}", request.getDescription());
+        log.info("测试网址: {}", request.getUrl());
+        log.info("测试用例描述: {}", request.getDescription());
 
         try {
             try (Playwright playwright = Playwright.create();
@@ -58,10 +56,12 @@ public class UITestController {
                 List<TestResult> testResults = new ArrayList<>();
 
                 while (index < cases.length && failureTimes <= maxFailureTimes) {
-                    log.info("正在执行第{}个用例: {}", index + 1, cases[index]);
+                    log.info("开始测试第{}个用例: {}", index + 1, cases[index]);
 
                     //String standardCases = testCasesTrans.trans(cases[index], page);
-                    String standardCases = testCasesTrans.transByVision(cases[index], page);
+                    String standardStr = testCasesTrans.transByVision(cases[index], page);
+
+                    String standardCases = SubStringUtils.subCasesUselessPart(standardStr);
 
                     //TestCase testCase = new TestCase();
                     TestCaseVision testCaseVision = new TestCaseVision();
@@ -71,6 +71,7 @@ public class UITestController {
                     } catch (Exception e) {
                         failureTimes++;
                         log.error("第{}个用例json转换失败: {}", index + 1, e.getMessage());
+                        continue;
                     }
 
                     // 矫正大模型和页面的像素偏移量
@@ -89,10 +90,10 @@ public class UITestController {
                     if (testResult.getStatus()) {
                         index++;
                         failureTimes = 0;
-                        log.info("测试#{}成功...", index);
+                        log.info("测试#{}成功...", index + 1);
                     } else {
                         failureTimes++;
-                        log.info("测试#{}失败，进行重试...", index);
+                        log.info("测试#{}失败，进行重试...", index + 1);
                     }
                 }
                 if (failureTimes > maxFailureTimes) {

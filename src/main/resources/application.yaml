@@ -21,7 +21,7 @@ app:
     # 跨域，开发阶段可以设置为 * 不限制
     cross-origin: '*'
     # 模型最大重试次数
-    max-retry-times: 1
+    max-retry-times: 3
 
 server:
   port: 80

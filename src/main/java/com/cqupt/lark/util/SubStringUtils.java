@@ -1,6 +1,8 @@
 package com.cqupt.lark.util;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SubStringUtils {
 
@@ -38,5 +40,11 @@ public class SubStringUtils {
                 .filter(s -> !s.isEmpty())
                 .toArray(String[]::new);
 
+    }
+
+    public static String subCasesUselessPart(String standardStr) {
+        int start = standardStr.indexOf('{');
+        int end = standardStr.lastIndexOf('}');
+        return standardStr.substring(start, end + 1);
     }
 }

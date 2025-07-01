@@ -1,5 +1,6 @@
 package com.cqupt.lark;
 
+import com.cqupt.lark.util.SubStringUtils;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,10 @@ public class SubHtmlStringTest {
                     .replaceAll("(?i)<meta[^>]*>", "");
             System.out.println(cleanHtml);
         }
+    }
+    @Test
+    public void test2() {
+        System.out.println(SubStringUtils.subCasesUselessPart("123sad{seTyp}asdf"));
 
     }
 }

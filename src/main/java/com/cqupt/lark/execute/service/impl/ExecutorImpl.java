@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -44,8 +46,10 @@ public class ExecutorImpl implements Executor {
     public boolean executeWithVision(TestCaseVision testCaseVision, Page page) {
         int x1 = testCaseVision.getXUp();
         int y1 = testCaseVision.getYUp();
-        int width = testCaseVision.getXDown() - testCaseVision.getXUp();
-        int height = testCaseVision.getYDown() - testCaseVision.getYUp();
+        int x2 = testCaseVision.getXDown();
+        int y2 = testCaseVision.getYDown();
+        int width = x2 - x1;
+        int height = y2 - y1;
 
         // 注入CSS样式来创建红色边框
         page.evaluate("([x, y, w, h]) => {\n" +
@@ -59,10 +63,10 @@ public class ExecutorImpl implements Executor {
                 "  div.style.zIndex = '9999';\n" +
                 "  div.style.pointerEvents = 'none';\n" +
                 "  document.body.appendChild(div);\n" +
-                "}", new Object[]{x1, y1, width, height});
+                "}", Arrays.asList(x1, y1, width, height));
 
-        int midX = (testCaseVision.getXUp() + testCaseVision.getXDown()) / 2;
-        int midY = (testCaseVision.getYUp() + testCaseVision.getYDown()) / 2;
+        int midX = (x1 + x2) / 2;
+        int midY = (y1 + y2) / 2;
         try {
             switch (testCaseVision.getCaseType()) {
                 case Click:
