@@ -5,7 +5,9 @@ import com.cqupt.lark.api.model.vo.ResponseVO;
 import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.execute.service.Executor;
 import com.cqupt.lark.translation.model.entity.TestCase;
+import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.cqupt.lark.translation.service.TestCasesTrans;
+import com.cqupt.lark.util.OffsetCorrectUtils;
 import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.validate.service.ValidateService;
 import com.microsoft.playwright.*;
@@ -58,17 +60,25 @@ public class UITestController {
                 while (index < cases.length && failureTimes <= maxFailureTimes) {
                     log.info("正在执行第{}个用例: {}", index + 1, cases[index]);
 
-                    String standardCases = testCasesTrans.trans(cases[index], page);
-                    TestCase testCase = new TestCase();
+                    //String standardCases = testCasesTrans.trans(cases[index], page);
+                    String standardCases = testCasesTrans.transByVision(cases[index], page);
+
+                    //TestCase testCase = new TestCase();
+                    TestCaseVision testCaseVision = new TestCaseVision();
                     try {
-                        testCase = testCasesTrans.transToJson(standardCases);
+                        //testCase = testCasesTrans.transToJson(standardCases);
+                        testCaseVision = testCasesTrans.transToJsonWithVision(standardCases);
                     } catch (Exception e) {
                         failureTimes++;
                         log.error("第{}个用例json转换失败: {}", index + 1, e.getMessage());
                     }
 
+                    // 矫正大模型和页面的像素偏移量
+                    TestCaseVision testCaseVisionCorrected = OffsetCorrectUtils.correct(testCaseVision);
+
                     TestResult testResult = new TestResult();
-                    if (executor.execute(testCase, page)) {
+                    //if (executor.execute(testCase, page)) {
+                    if (executor.executeWithVision(testCaseVisionCorrected, page)) {
                         testResult = validateService.validate(page.screenshot(), cases[index]);
                     } else {
                         testResult.setStatus(false);

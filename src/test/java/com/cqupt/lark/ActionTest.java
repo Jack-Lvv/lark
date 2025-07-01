@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @Slf4j
@@ -37,24 +39,15 @@ public class ActionTest {
                     // 等待页面加载完成
                     page.waitForLoadState(LoadState.NETWORKIDLE);
                     log.info("当前页面标题: {}", page.title());
+                    byte[] imageBytes = page.screenshot();
+                    Files.write(Paths.get("D:/Desktop/picture.png"), imageBytes);
 
-                    Locator locator = locationRepository.getByLocator(".ud__button--size-md", page);
-                    locator.waitFor();
-                    locator.click();
-                    locator = locationRepository.getByLocator(".switch-icon", page);
-                    locator.waitFor();
-                    locator.click();
-                    locator = locationRepository.getByLocator(".mobile-input-phone", page);
-                    locator.waitFor();
-                    locator.fill("15552132318");
 
-                    Thread.sleep(5000);
-
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
-
-
     }
 
 }

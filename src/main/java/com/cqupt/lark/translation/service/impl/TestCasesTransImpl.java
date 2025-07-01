@@ -3,25 +3,28 @@ package com.cqupt.lark.translation.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.cqupt.lark.agent.service.Assistant;
+import com.cqupt.lark.agent.service.VisionAssistant;
 import com.cqupt.lark.translation.model.dto.TestCaseDTO;
+import com.cqupt.lark.translation.model.dto.TestCaseVisionDTO;
 import com.cqupt.lark.translation.model.entity.TestCase;
+import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.cqupt.lark.translation.model.enums.CaseType;
 import com.cqupt.lark.translation.model.enums.LocatorType;
 import com.cqupt.lark.translation.service.TestCasesTrans;
 import com.microsoft.playwright.Page;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TestCasesTransImpl implements TestCasesTrans {
 
-    private static final Logger log = LoggerFactory.getLogger(TestCasesTransImpl.class);
     private final Assistant assistant;
+    private final VisionAssistant visionAssistant;
     @Override
     public String trans(String description, Page page) throws IOException {
 
@@ -38,6 +41,30 @@ public class TestCasesTransImpl implements TestCasesTrans {
         TestCaseDTO testCaseDTO = JSON.parseObject(outMessageByAi, new TypeReference<>(){});
 
         return convertToTestCase(testCaseDTO);
+    }
+
+    @Override
+    public String transByVision(String aCase, Page page) throws IOException {
+        String outMessageByAi = visionAssistant.chatByVision(aCase, page.screenshot());
+        log.info("视觉大模型输出测试用例的json格式: {}", outMessageByAi);
+        return outMessageByAi;
+    }
+
+    @Override
+    public TestCaseVision transToJsonWithVision(String standardCases) {
+        TestCaseVisionDTO testCaseVisionDTO = JSON.parseObject(standardCases, new TypeReference<>() {});
+        return convertToTestCaseVision(testCaseVisionDTO);
+    }
+
+    private TestCaseVision convertToTestCaseVision(TestCaseVisionDTO dto) {
+        return TestCaseVision.builder()
+                .caseType(CaseType.valueOf(dto.getCaseType()))
+                .caseValue(dto.getCaseValue())
+                .xUp(dto.getXUp())
+                .yUp(dto.getYUp())
+                .xDown(dto.getXDown())
+                .yDown(dto.getYDown())
+                .build();
     }
 
     public String subHtmlContext(String htmlContext) {

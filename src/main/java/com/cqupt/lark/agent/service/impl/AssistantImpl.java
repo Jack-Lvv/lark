@@ -6,7 +6,7 @@ import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.data.message.VideoContent;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,11 +16,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Service
-@RequiredArgsConstructor
 public class AssistantImpl implements Assistant {
 
+    @Value("${open-ai.doubao.base-url}")
+    private String baseUrl;
+    @Value("${open-ai.doubao.api-key}")
+    private String apiKey;
+    @Value("${open-ai.doubao.model-name}")
+    private String modelName;
 
-    private final OpenAiChatModel model;
+    private final OpenAiChatModel model = OpenAiChatModel.builder()
+            .baseUrl(baseUrl)
+            .apiKey(apiKey)
+            .modelName(modelName)
+            .logRequests(true)
+            .logResponses(true)
+            .build();
     @Override
     public String chatWithTranslation(String InputMessage, String HtmlContext) throws IOException {
         String prompt;

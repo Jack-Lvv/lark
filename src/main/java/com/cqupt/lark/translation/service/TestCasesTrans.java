@@ -1,6 +1,7 @@
 package com.cqupt.lark.translation.service;
 
 import com.cqupt.lark.translation.model.entity.TestCase;
+import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.microsoft.playwright.Page;
 
 import java.io.IOException;
@@ -11,4 +12,7 @@ public interface TestCasesTrans {
 
     TestCase transToJson(String outMessageByAi) throws IOException;
 
+    String transByVision(String aCase, Page page) throws IOException;
+
+    TestCaseVision transToJsonWithVision(String standardCases);
 }

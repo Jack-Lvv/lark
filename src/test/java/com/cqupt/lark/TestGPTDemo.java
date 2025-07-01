@@ -1,22 +1,32 @@
 package com.cqupt.lark;
 
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 public class TestGPTDemo {
 
+    @Value("${open-ai.doubao-vision.base-url}")
+    private String baseUrl;
+    @Value("${open-ai.doubao-vision.api-key}")
+    private String apiKey;
+    @Value("${open-ai.doubao-vision.model-name}")
+    private String modelName;
+
+
     @Test
     public void test() {
         OpenAiChatModel model = OpenAiChatModel.builder()
-                .baseUrl("http://langchain4j.dev/demo/openai/v1")
-                .apiKey("demo")
-                .modelName("gpt-4o-mini")
+                .baseUrl(baseUrl)
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .logRequests(true)
+                .logResponses(true)
                 .build();
-
-        String answer = model.chat("你是什么模型");
+        String answer = model.chat(UserMessage.from("你是什么模型")).aiMessage().text();
         System.out.println(answer);
     }
 
@@ -32,14 +42,5 @@ public class TestGPTDemo {
         System.out.println(answer);
     }
 
-    @Autowired
-    private OpenAiChatModel model;
-    @Test
-    public void testSpringBootStarter() {
 
-        // 自动封装http请求发送至大模型，自动build大模型配置，简化开发流程
-        String answer = model.chat("我是谁");
-        System.out.println(answer);
-
-    }
 }

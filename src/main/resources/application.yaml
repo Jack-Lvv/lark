@@ -26,11 +26,21 @@ app:
 server:
   port: 80
 
-langchain4j:
-  open-ai:
-    chat-model:
-      base-url: 'https://ark.cn-beijing.volces.com/api/v3'
-      api-key: 'ec4c495e-e640-476a-b35b-228af0c5b457'
-      model-name: 'doubao-seed-1-6-250615'
-      log-requests: true
-      log-responses: true
+open-ai:
+  doubao:
+    base-url: 'https://ark.cn-beijing.volces.com/api/v3'
+    api-key: 'ec4c495e-e640-476a-b35b-228af0c5b457'
+    model-name: 'doubao-seed-1-6-250615'
+    log-requests: true
+    log-responses: true
+  doubao-vision:
+    base-url: 'https://ark.cn-beijing.volces.com/api/v3'
+    api-key: 'ec4c495e-e640-476a-b35b-228af0c5b457'
+    model-name: 'doubao-1.5-vision-pro-250328'
+    log-requests: true
+    log-responses: true
+offset:
+  xOffset: 0
+  yOffset: 0
+  xRate: 1.27
+  yRate: 0.7
