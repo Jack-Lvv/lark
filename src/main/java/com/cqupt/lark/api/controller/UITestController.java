@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +41,17 @@ public class UITestController {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
 
+        // 获取项目根目录路径
+        Path resourcesPath = Paths.get("src/main/resources/mock/auth.json").toAbsolutePath();
+
         try {
             try (Playwright playwright = Playwright.create();
                  Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
                          .setHeadless(false).setChannel("chrome").setSlowMo(1000));
                  BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                          .setRecordVideoDir(Paths.get("src/main/resources/static/videos"))
-                         .setRecordVideoSize(1280, 720)); // 设置视频尺寸);
+                         .setRecordVideoSize(1280, 720)
+                         .setStorageStatePath(resourcesPath)); // 设置视频尺寸
                  Page page = context.newPage()) {
 
                 page.navigate(request.getUrl());

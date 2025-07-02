@@ -45,6 +45,8 @@ public class SubStringUtils {
     public static String subCasesUselessPart(String standardStr) {
         int start = standardStr.indexOf('{');
         int end = standardStr.lastIndexOf('}');
-        return standardStr.substring(start, end + 1);
+        return standardStr
+                .substring(start, end + 1)
+                .replaceAll("\\s", "");
     }
 }
