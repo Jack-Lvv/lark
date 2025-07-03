@@ -2,6 +2,8 @@ package com.cqupt.lark.api.controller;
 
 import com.cqupt.lark.api.model.dto.RequestDTO;
 import com.cqupt.lark.api.model.vo.ResponseVO;
+import com.cqupt.lark.assertion.model.entity.AssertResult;
+import com.cqupt.lark.assertion.service.AssertService;
 import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.execute.service.Executor;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
@@ -32,6 +34,7 @@ public class UITestController {
     private final TestCasesTrans testCasesTrans;
     private final Executor executor;
     private final ValidateService validateService;
+    private final AssertService assertService;
 
     @Value("${app.config.max-retry-times}")
     private int maxFailureTimes;
@@ -40,6 +43,7 @@ public class UITestController {
     public ResponseVO test(@RequestBody RequestDTO request) {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
+        log.info("预期结果描述: {}", request.getExpectedResult());
 
         // 获取项目根目录路径
         Path resourcesPath = Paths.get("src/main/resources/mock/auth.json").toAbsolutePath();
@@ -47,7 +51,10 @@ public class UITestController {
         try {
             try (Playwright playwright = Playwright.create();
                  Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-                         .setHeadless(false).setChannel("chrome").setSlowMo(1000));
+                         .setHeadless(false)
+                         .setChannel("chrome")
+                         //.setSlowMo(1000)
+                 );
                  BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                          .setRecordVideoDir(Paths.get("src/main/resources/static/videos"))
                          .setRecordVideoSize(1280, 720)
@@ -66,11 +73,10 @@ public class UITestController {
                     //String standardCases = testCasesTrans.trans(cases[index], page);
                     String standardStr = testCasesTrans.transByVision(cases[index], page);
 
-                    String standardCases = SubStringUtils.subCasesUselessPart(standardStr);
-
                     //TestCase testCase = new TestCase();
                     TestCaseVision testCaseVision = new TestCaseVision();
                     try {
+                        String standardCases = SubStringUtils.subCasesUselessPart(standardStr);
                         //testCase = testCasesTrans.transToJson(standardCases);
                         testCaseVision = testCasesTrans.transToJsonWithVision(standardCases);
                     } catch (Exception e) {
@@ -101,20 +107,36 @@ public class UITestController {
                         log.info("测试#{}失败，进行重试...", index + 1);
                     }
                 }
+
+                AssertResult assertResult = null;
                 if (failureTimes > maxFailureTimes) {
                     testResults.add(TestResult.builder()
                                     .status(false)
                                     .description("达到最大重试次数仍未执行成功")
                                     .build());
+                } else if (request.getExpectedResult() != null && !request.getExpectedResult().isEmpty()){
+                    assertResult = assertService.assertByVision(page.screenshot(), request.getExpectedResult());
                 }
 
                 String videoPath = SubStringUtils.subVideosPath(page.video().path().toString());
-                return ResponseVO.builder()
-                        .success(true)
-                        .message(testResults.toString())
-                        // .video("videos/ZongBianShi-HuYongQiu_9b7a98caab886e25f0efe8992df6ae80.mp4")
-                        .video(videoPath)
-                        .build();
+                if (assertResult != null) {
+                    return ResponseVO.builder()
+                            .success(true)
+                            .message(testResults.toString())
+                            // .video("videos/ZongBianShi-HuYongQiu_9b7a98caab886e25f0efe8992df6ae80.mp4")
+                            .video(videoPath)
+                            .assertMessage(assertResult.toString())
+                            .build();
+                } else {
+                    return ResponseVO.builder()
+                            .success(true)
+                            .message(testResults.toString())
+                            // .video("videos/ZongBianShi-HuYongQiu_9b7a98caab886e25f0efe8992df6ae80.mp4")
+                            .video(videoPath)
+                            .assertMessage("预期结果为空，未执行断言")
+                            .build();
+                }
+
             }
 
         } catch (Exception e) {

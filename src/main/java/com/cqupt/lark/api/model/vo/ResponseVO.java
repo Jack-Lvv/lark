@@ -14,4 +14,5 @@ public class ResponseVO {
     private Boolean success;
     private String message;
     private String video;
+    private String assertMessage;
 }

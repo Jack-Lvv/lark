@@ -8,4 +8,6 @@ public class RequestDTO {
     String url;
 
     String description;
+
+    String expectedResult;
 }
