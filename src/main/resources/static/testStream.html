@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSE Image Stream</title>
+</head>
+<body>
+<h1>图片推送</h1>
+<img id="img" width="400"/>
+
+<script>
+    const eventSource = new EventSource("http://localhost/screenshots");
+
+    eventSource.addEventListener("image", function (event) {
+        const base64Image = event.data;
+        document.getElementById("img").src = "data:image/png;base64," + base64Image;
+    });
+
+    eventSource.onerror = function (e) {
+        console.error("SSE Error:", e);
+    };
+</script>
+</body>
+</html>

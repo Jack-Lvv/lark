@@ -1,6 +1,7 @@
 package com.cqupt.lark.execute.service.impl;
 
-import com.cqupt.lark.execute.service.Executor;
+import com.cqupt.lark.browser.service.StartBrowserService;
+import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.location.service.LocatorService;
 import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ExecutorImpl implements Executor {
+public class ExecutorImpl implements TestExecutorService {
 
     private final LocatorService locatorService;
 
@@ -43,7 +44,7 @@ public class ExecutorImpl implements Executor {
     }
 
     @Override
-    public boolean executeWithVision(TestCaseVision testCaseVision, Page page) {
+    public boolean executeWithVision(TestCaseVision testCaseVision, StartBrowserService startBrowserService) {
         int x1 = testCaseVision.getXUp();
         int y1 = testCaseVision.getYUp();
         int x2 = testCaseVision.getXDown();
@@ -52,7 +53,7 @@ public class ExecutorImpl implements Executor {
         int height = y2 - y1;
 
         // 注入CSS样式来创建红色边框
-        page.evaluate("([x, y, w, h]) => {\n" +
+        startBrowserService.evaluate("([x, y, w, h]) => {\n" +
                 "  const div = document.createElement('div');\n" +
                 "  div.style.position = 'absolute';\n" +
                 "  div.style.left = x + 'px';\n" +
@@ -65,16 +66,16 @@ public class ExecutorImpl implements Executor {
                 "  document.body.appendChild(div);\n" +
                 "}", Arrays.asList(x1, y1, width, height));
 
+
         int midX = (x1 + x2) / 2;
         int midY = (y1 + y2) / 2;
         try {
             switch (testCaseVision.getCaseType()) {
                 case Click:
-                    page.mouse().click(midX, midY);
+                    startBrowserService.click(midX, midY);
                     break;
                 case Fill:
-                    page.mouse().click(midX, midY);
-                    page.keyboard().type(testCaseVision.getCaseValue());
+                    startBrowserService.fill(midX, midY, testCaseVision.getCaseValue());
                     break;
             }
         } catch (Exception e) {

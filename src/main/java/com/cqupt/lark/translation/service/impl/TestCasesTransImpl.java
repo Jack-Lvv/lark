@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.cqupt.lark.agent.service.Assistant;
 import com.cqupt.lark.agent.service.VisionAssistant;
+import com.cqupt.lark.browser.service.StartBrowserService;
 import com.cqupt.lark.translation.model.dto.TestCaseDTO;
 import com.cqupt.lark.translation.model.dto.TestCaseVisionDTO;
 import com.cqupt.lark.translation.model.entity.TestCase;
@@ -44,8 +45,8 @@ public class TestCasesTransImpl implements TestCasesTrans {
     }
 
     @Override
-    public String transByVision(String aCase, Page page) throws IOException {
-        String outMessageByAi = visionAssistant.chatByVision(aCase, page.screenshot());
+    public String transByVision(String aCase, StartBrowserService startBrowserService) throws IOException {
+        String outMessageByAi = visionAssistant.chatByVision(aCase, startBrowserService.screenshot());
         log.info("视觉大模型输出测试用例的json格式: {}", outMessageByAi);
         return outMessageByAi;
     }

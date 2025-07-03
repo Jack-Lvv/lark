@@ -112,6 +112,8 @@
         <div class="spinner"></div>
         <p>测试执行中，请稍候...</p>
     </div>
+
+    <img id="img" width="400"/>
     
     <div id="result"></div>
     
@@ -122,6 +124,20 @@
     </div>
     
     <script>
+        // sse截图流
+        const eventSource = new EventSource("http://localhost/screenshots");
+
+        eventSource.addEventListener("image", function (event) {
+            const base64Image = event.data;
+            document.getElementById("img").src = "data:image/png;base64," + base64Image;
+            imgElement.style.display = "block"; // 当有图片时显示
+        });
+
+        eventSource.onerror = function (e) {
+            console.error("SSE Error:", e);
+        };
+
+        // 其他
         document.getElementById('testForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
