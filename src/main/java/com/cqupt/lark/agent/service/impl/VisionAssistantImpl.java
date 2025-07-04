@@ -5,7 +5,6 @@ import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +45,7 @@ public class VisionAssistantImpl implements VisionAssistant {
         }
 
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/png");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(InputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
 
@@ -64,7 +63,7 @@ public class VisionAssistantImpl implements VisionAssistant {
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/png");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
 
@@ -81,7 +80,7 @@ public class VisionAssistantImpl implements VisionAssistant {
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/png");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
 
     }

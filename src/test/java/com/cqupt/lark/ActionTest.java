@@ -1,7 +1,6 @@
 package com.cqupt.lark;
 
 import com.cqupt.lark.agent.service.Assistant;
-import com.cqupt.lark.execute.repository.ActionRepository;
 import com.cqupt.lark.location.repository.LocationRepository;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
@@ -17,8 +16,6 @@ import java.nio.file.Paths;
 @Slf4j
 @SpringBootTest
 public class ActionTest {
-    @Autowired
-    private ActionRepository actionRepository;
     @Autowired
     private Assistant assistant;
     @Autowired

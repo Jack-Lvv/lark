@@ -59,7 +59,7 @@ public class AssistantImpl implements Assistant {
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/png");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
 
@@ -71,7 +71,7 @@ public class AssistantImpl implements Assistant {
     @Override
     public String chatWithPicture(String InputMessage, byte[] imageData) {
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/png");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
         UserMessage imageMessage = UserMessage.from(imageContent);
         return model.chat(imageMessage, UserMessage.from(InputMessage)).aiMessage().text();
     }

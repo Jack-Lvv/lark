@@ -1,7 +1,9 @@
 package com.cqupt.lark.browser;
 
+import com.cqupt.lark.util.CompressImageUtils;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.ScreenshotType;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,7 +40,13 @@ public class BrowserPageSupport {
             return null;
         }
         try {
-            return page.screenshot();
+            byte[] screenshot = page.screenshot(new Page.ScreenshotOptions()
+                    .setType(ScreenshotType.JPEG)
+                    .setQuality(80)
+                    .setFullPage(true));
+            return CompressImageUtils.compressImage(screenshot, 640, 360);
+        } catch (Exception e) {
+            throw new RuntimeException( "图片压缩失败", e);
         } finally {
             lock.unlock();
         }
