@@ -1,12 +1,11 @@
 package com.cqupt.lark.execute.service.impl;
 
-import com.cqupt.lark.browser.service.StartBrowserService;
+import com.cqupt.lark.browser.service.BrowserPageSupport;
 import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.location.service.LocatorService;
 import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,20 +20,18 @@ public class ExecutorImpl implements TestExecutorService {
     private final LocatorService locatorService;
 
     @Override
-    public Boolean execute(TestCase testCase, Page page) {
-        Locator locator = locatorService.getLocatorByJson(testCase, page);
+    public Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport) {
+        Locator locator = locatorService.getLocatorByJson(testCase, browserPageSupport);
         if (locator == null) {
             return false;
         }
         try {
             switch (testCase.getCaseType()) {
                 case Click:
-                    locator.waitFor();
-                    locator.click();
+                    browserPageSupport.locatorClick(locator);
                     break;
                 case Fill:
-                    locator.waitFor();
-                    locator.fill(testCase.getLocatorValue());
+                    browserPageSupport.locatorFill(locator, testCase.getLocatorValue());
                     break;
             }
         } catch (Exception e) {
@@ -44,7 +41,7 @@ public class ExecutorImpl implements TestExecutorService {
     }
 
     @Override
-    public boolean executeWithVision(TestCaseVision testCaseVision, StartBrowserService startBrowserService) {
+    public boolean executeWithVision(TestCaseVision testCaseVision, BrowserPageSupport browserPageSupport) {
         int x1 = testCaseVision.getXUp();
         int y1 = testCaseVision.getYUp();
         int x2 = testCaseVision.getXDown();
@@ -53,7 +50,7 @@ public class ExecutorImpl implements TestExecutorService {
         int height = y2 - y1;
 
         // 注入CSS样式来创建红色边框
-        startBrowserService.evaluate("([x, y, w, h]) => {\n" +
+        browserPageSupport.evaluate("([x, y, w, h]) => {\n" +
                 "  const div = document.createElement('div');\n" +
                 "  div.style.position = 'absolute';\n" +
                 "  div.style.left = x + 'px';\n" +
@@ -72,10 +69,10 @@ public class ExecutorImpl implements TestExecutorService {
         try {
             switch (testCaseVision.getCaseType()) {
                 case Click:
-                    startBrowserService.click(midX, midY);
+                    browserPageSupport.click(midX, midY);
                     break;
                 case Fill:
-                    startBrowserService.fill(midX, midY, testCaseVision.getCaseValue());
+                    browserPageSupport.fill(midX, midY, testCaseVision.getCaseValue());
                     break;
             }
         } catch (Exception e) {

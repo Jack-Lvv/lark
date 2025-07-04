@@ -1,7 +1,6 @@
-package com.cqupt.lark.stream.controller;
+package com.cqupt.lark.api.controller;
 
-import com.cqupt.lark.browser.service.StartBrowserService;
-import com.microsoft.playwright.*;
+import com.cqupt.lark.browser.service.BrowserPageSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -21,20 +20,20 @@ import java.util.concurrent.Executors;
 public class ScreenshotController {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    StartBrowserService startBrowserService = StartBrowserService.getInstance();
 
     @GetMapping(value = "/screenshots", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamScreenshots() {
+
+        BrowserPageSupport browserPageSupport = BrowserPageSupport.getInstance();
+
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
         executor.execute(() -> {
 
-            Page page = startBrowserService.getPage();
-
-            while (!page.isClosed()) {
+            while (!browserPageSupport.getIsClosed() && browserPageSupport.getIsStarted()) {
                 try {
                     // 截取页面截图
-                    byte[] screenshot = startBrowserService.screenshot();
+                    byte[] screenshot = browserPageSupport.screenshot();
 
                     // 转换为Base64
                     String base64Image = Base64.getEncoder().encodeToString(screenshot);

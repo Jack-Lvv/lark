@@ -1,13 +1,12 @@
 package com.cqupt.lark.execute.service;
 
-import com.cqupt.lark.browser.service.StartBrowserService;
+import com.cqupt.lark.browser.service.BrowserPageSupport;
 import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
-import com.microsoft.playwright.Page;
 
 public interface TestExecutorService {
 
-    Boolean execute(TestCase testCase, Page page);
+    Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport);
 
-    boolean executeWithVision(TestCaseVision testCaseVision, StartBrowserService startBrowserService);
+    boolean executeWithVision(TestCaseVision testCaseVision, BrowserPageSupport browserPageSupport);
 }

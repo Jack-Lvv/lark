@@ -12,18 +12,38 @@
             padding: 20px;
             line-height: 1.6;
         }
+
         h1 {
             color: #333;
             text-align: center;
         }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-container {
+            flex: 1;
+        }
+
+        .image-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
+
         input[type="text"], textarea {
             width: 100%;
             padding: 8px;
@@ -31,10 +51,12 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         textarea {
             height: 150px;
             resize: vertical;
         }
+
         button {
             background-color: #4CAF50;
             color: white;
@@ -44,137 +66,116 @@
             cursor: pointer;
             font-size: 16px;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
         #result {
             margin-top: 30px;
             padding: 15px;
             border-radius: 4px;
             display: none;
         }
+
         .success {
             background-color: #dff0d8;
             color: #3c763d;
             border: 1px solid #d6e9c6;
         }
+
         .error {
             background-color: #f2dede;
             color: #a94442;
             border: 1px solid #ebccd1;
         }
-        #video-container {
-            margin-top: 20px;
-            text-align: center;
-        }
-        video {
+
+        #img {
             max-width: 100%;
+            height: auto;
             border: 1px solid #ddd;
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <h1>UI自动化测试工具</h1>
-    
-    <form id="testForm">
-        <div class="form-group">
-            <label for="url">测试网址 (URL):</label>
-            <input type="text" id="url" name="url" placeholder="https://example.com" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="description">测试用例步骤描述:</label>
-            <textarea id="description" name="description" placeholder="1. 点击登录按钮&#10;2. 输入用户名和密码&#10;3. 提交表单" required></textarea>
-        </div>
-        
-        <button type="submit">执行测试</button>
-    </form>
-    
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>测试执行中，请稍候...</p>
+<h1>UI自动化测试工具</h1>
+<div class="container">
+    <div class="form-container">
+        <form id="testForm">
+            <div class="form-group">
+                <label for="url">测试网址 (URL):</label>
+                <input type="text" id="url" name="url" placeholder="https://example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">测试用例步骤描述:</label>
+                <textarea id="description" name="description"
+                          placeholder="1. 点击登录按钮&#10;2. 输入用户名和密码&#10;3. 提交表单" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="expectedResult">预期结果描述:</label>
+                <textarea id="expectedResult" name="expectedResult"
+                          placeholder="(可选)成功完成登录"
+                          >
+                </textarea>
+            </div>
+
+            <button type="submit">执行测试</button>
+        </form>
     </div>
 
-    <img id="img" width="400"/>
-    
-    <div id="result"></div>
-    
-    <div id="video-container">
-        <video id="resultVideo" controls style="display: none;">
-            您的浏览器不支持 HTML5 video 标签。
-        </video>
+    <div class="image-container">
+        <img id="img" width="400" style="display: none;" alt="等待页面打开..."/>
     </div>
-    
-    <script>
-        // sse截图流
-        const eventSource = new EventSource("http://localhost/screenshots");
+</div>
 
-        eventSource.addEventListener("image", function (event) {
-            const base64Image = event.data;
-            document.getElementById("img").src = "data:image/png;base64," + base64Image;
-            imgElement.style.display = "block"; // 当有图片时显示
-        });
+<div id="result"></div>
 
-        eventSource.onerror = function (e) {
-            console.error("SSE Error:", e);
-        };
+<script>
+    // sse截图流
+    const eventSource = new EventSource("http://localhost/screenshots");
 
-        // 其他
-        document.getElementById('testForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const url = document.getElementById('url').value;
-            const description = document.getElementById('description').value;
-            
-            // 显示加载动画
-            document.getElementById('loading').style.display = 'block';
-            // 隐藏之前的结果
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('resultVideo').style.display = 'none';
-            
-            fetch('http://localhost/api/test', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    url: url,
-                    description: description
-                })
+    eventSource.addEventListener("image", function (event) {
+        const base64Image = event.data;
+        const imgElement = document.getElementById("img");
+        imgElement.src = "data:image/png;base64," + base64Image;
+        imgElement.style.display = "block"; // 当有图片时显示
+    });
+
+    eventSource.onerror = function (e) {
+        console.error("SSE Error:", e);
+    };
+
+    // 其他
+    document.getElementById('testForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const url = document.getElementById('url').value;
+        const description = document.getElementById('description').value;
+        const expectedResult = document.getElementById('expectedResult').value;
+
+        // 隐藏之前的结果
+        document.getElementById('result').style.display = 'none';
+
+        fetch('http://localhost/api/test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url,
+                description: description,
+                expectedResult: expectedResult
             })
+        })
             .then(response => response.json())
             .then(data => {
-                // 隐藏加载动画
-                document.getElementById('loading').style.display = 'none';
-                
                 const resultDiv = document.getElementById('result');
                 if (data.success) {
                     resultDiv.className = 'success';
                     resultDiv.innerHTML = `<p>${data.message}</p>`;
-
-                    // 显示视频
-                    const videoElement = document.getElementById('resultVideo');
-                    videoElement.src = data.video;
-                    videoElement.style.display = 'block';
-                    videoElement.load();
                 } else {
                     resultDiv.className = 'error';
                     resultDiv.innerHTML = `<p>测试失败: ${data.message || '未知错误'}</p>`;
@@ -182,17 +183,14 @@
                 resultDiv.style.display = 'block';
             })
             .catch(error => {
-                // 隐藏加载动画
-                document.getElementById('loading').style.display = 'none';
-                
                 const resultDiv = document.getElementById('result');
                 resultDiv.className = 'error';
                 resultDiv.innerHTML = `<p>请求失败: ${error.message}</p>`;
                 resultDiv.style.display = 'block';
-                
+
                 console.error('Error:', error);
             });
-        });
-    </script>
+    });
+</script>
 </body>
 </html>

@@ -1,13 +1,14 @@
 package com.cqupt.lark.browser.service;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class StartBrowserService {
+public class BrowserPageSupport {
 
     private final Playwright playwright;
     private final Browser browser;
@@ -16,9 +17,16 @@ public class StartBrowserService {
     private final ReentrantLock lock = new ReentrantLock(true);
 
     // 使用 volatile 关键字确保多线程环境下的可见性
-    private static volatile StartBrowserService instance;
+    private static volatile BrowserPageSupport instance;
     private volatile boolean isClosed = false;
+    private volatile boolean isStarted = false;
 
+    public void setStarted() {
+        isStarted = true;
+    }
+    public boolean getIsStarted() {
+        return isStarted;
+    }
     public void navigate(String url) {
         lock.lock();
         try {
@@ -55,38 +63,37 @@ public class StartBrowserService {
             lock.unlock();
         }
     }
-    private StartBrowserService() {
+    private BrowserPageSupport() {
         // 获取项目根目录路径
         Path resourcesPath = Paths.get("src/main/resources/mock/auth.json").toAbsolutePath();
 
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-                .setHeadless(false)
-                .setChannel("chrome"));
+                .setHeadless(true)
+                //.setChannel("chrome")
+        );
         context = browser.newContext(new Browser.NewContextOptions()
                 .setStorageStatePath(resourcesPath));
         page = browser.newPage();
     }
 
     // 获取单例实例的静态方法
-    public static StartBrowserService getInstance() {
+    public static BrowserPageSupport getInstance() {
         // 双重检查锁定
         if (instance == null) {
-            synchronized (StartBrowserService.class) {
+            synchronized (BrowserPageSupport.class) {
                 if (instance == null) {
-                    instance = new StartBrowserService();
+                    instance = new BrowserPageSupport();
                 }
             }
         }
         return instance;
     }
 
-    public Page getPage() {
-        if (isClosed) {
-            throw new IllegalStateException("StartBrowserService resources have been closed!");
-        }
-        return page;
+    public boolean getIsClosed() {
+        return isClosed;
     }
+
     public void close() {
         if (!isClosed) {
             try {
@@ -111,7 +118,82 @@ public class StartBrowserService {
         }
     }
 
-    public String getVideoUrl() {
-        return page.video().path().toString();
+    public String getContent() {
+        lock.lock();
+        try {
+            return page.content();
+        } finally {
+            lock.unlock();
+        }
     }
+
+    public void locatorClick(Locator locator) {
+        lock.lock();
+        try {
+            locator.click();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void locatorFill(Locator locator, String locatorValue) {
+        lock.lock();
+        try {
+            locator.fill(locatorValue);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Locator getByRole(AriaRole role, String text) {
+        lock.lock();
+        try {
+            return page.getByRole(role, new Page.GetByRoleOptions().setName(text));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Locator getByText(String text) {
+        lock.lock();
+        try {
+            return page.getByText(text);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Locator getByLocator(String text) {
+        lock.lock();
+        try {
+            return page.locator(text);
+        } finally {
+            lock.unlock();
+        }
+    }
+    public Locator getLabelByText(String text) {
+        lock.lock();
+        try {
+            return page.getByLabel(text);
+        } finally {
+            lock.unlock();
+        }
+    }
+    public Locator getPlaceholderByText(String text) {
+        lock.lock();
+        try {
+            return page.getByPlaceholder(text);
+        } finally {
+            lock.unlock();
+        }
+    }
+    public Locator getTestIdByText(String text) {
+        lock.lock();
+        try {
+            return page.getByTestId(text);
+        } finally {
+            lock.unlock();
+        }
+    }
+
 }

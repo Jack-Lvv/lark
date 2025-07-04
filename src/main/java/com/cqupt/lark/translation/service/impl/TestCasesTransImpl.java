@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.cqupt.lark.agent.service.Assistant;
 import com.cqupt.lark.agent.service.VisionAssistant;
-import com.cqupt.lark.browser.service.StartBrowserService;
+import com.cqupt.lark.browser.service.BrowserPageSupport;
 import com.cqupt.lark.translation.model.dto.TestCaseDTO;
 import com.cqupt.lark.translation.model.dto.TestCaseVisionDTO;
 import com.cqupt.lark.translation.model.entity.TestCase;
@@ -12,7 +12,6 @@ import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.cqupt.lark.translation.model.enums.CaseType;
 import com.cqupt.lark.translation.model.enums.LocatorType;
 import com.cqupt.lark.translation.service.TestCasesTrans;
-import com.microsoft.playwright.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,9 +26,9 @@ public class TestCasesTransImpl implements TestCasesTrans {
     private final Assistant assistant;
     private final VisionAssistant visionAssistant;
     @Override
-    public String trans(String description, Page page) throws IOException {
+    public String trans(String description, BrowserPageSupport browserPageSupport) throws IOException {
 
-        String htmlContext = page.content();
+        String htmlContext = browserPageSupport.getContent();
         String subHtmlContext = subHtmlContext(htmlContext);
         String outMessageByAi = assistant.chatWithTranslation(description, subHtmlContext);
         log.info("大模型输出测试用例json格式: {}", outMessageByAi);
@@ -45,8 +44,8 @@ public class TestCasesTransImpl implements TestCasesTrans {
     }
 
     @Override
-    public String transByVision(String aCase, StartBrowserService startBrowserService) throws IOException {
-        String outMessageByAi = visionAssistant.chatByVision(aCase, startBrowserService.screenshot());
+    public String transByVision(String aCase, BrowserPageSupport browserPageSupport) throws IOException {
+        String outMessageByAi = visionAssistant.chatByVision(aCase, browserPageSupport.screenshot());
         log.info("视觉大模型输出测试用例的json格式: {}", outMessageByAi);
         return outMessageByAi;
     }
