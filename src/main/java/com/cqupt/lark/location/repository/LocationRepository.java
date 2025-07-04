@@ -1,6 +1,6 @@
 package com.cqupt.lark.location.repository;
 
-import com.cqupt.lark.browser.service.BrowserPageSupport;
+import com.cqupt.lark.browser.BrowserPageSupport;
 import com.microsoft.playwright.Locator;
 
 public interface LocationRepository {

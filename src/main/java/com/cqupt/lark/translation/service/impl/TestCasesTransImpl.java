@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.cqupt.lark.agent.service.Assistant;
 import com.cqupt.lark.agent.service.VisionAssistant;
-import com.cqupt.lark.browser.service.BrowserPageSupport;
+import com.cqupt.lark.browser.BrowserPageSupport;
 import com.cqupt.lark.translation.model.dto.TestCaseDTO;
 import com.cqupt.lark.translation.model.dto.TestCaseVisionDTO;
 import com.cqupt.lark.translation.model.entity.TestCase;

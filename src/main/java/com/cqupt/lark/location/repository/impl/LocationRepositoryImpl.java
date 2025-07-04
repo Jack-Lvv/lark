@@ -1,6 +1,6 @@
 package com.cqupt.lark.location.repository.impl;
 
-import com.cqupt.lark.browser.service.BrowserPageSupport;
+import com.cqupt.lark.browser.BrowserPageSupport;
 import com.cqupt.lark.location.repository.LocationRepository;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;

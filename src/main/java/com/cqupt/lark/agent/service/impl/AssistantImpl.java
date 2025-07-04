@@ -18,20 +18,19 @@ import java.util.Base64;
 @Service
 public class AssistantImpl implements Assistant {
 
-    @Value("${open-ai.doubao.base-url}")
-    private String baseUrl;
-    @Value("${open-ai.doubao.api-key}")
-    private String apiKey;
-    @Value("${open-ai.doubao.model-name}")
-    private String modelName;
+    private final OpenAiChatModel model;
 
-    private OpenAiChatModel model = OpenAiChatModel.builder()
-            .baseUrl(baseUrl)
-            .apiKey(apiKey)
-            .modelName(modelName)
-            .logRequests(true)
-            .logResponses(true)
-            .build();
+    public AssistantImpl(
+            @Value("${open-ai.doubao.base-url}") String baseUrl,
+            @Value("${open-ai.doubao.api-key}") String apiKey,
+            @Value("${open-ai.doubao.model-name}") String modelName) {
+        model = OpenAiChatModel.builder()
+                .baseUrl(baseUrl)
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .build();
+    }
+
     @Override
     public String chatWithTranslation(String InputMessage, String HtmlContext) throws IOException {
         String prompt;

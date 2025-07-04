@@ -1,6 +1,6 @@
 package com.cqupt.lark.location.service;
 
-import com.cqupt.lark.browser.service.BrowserPageSupport;
+import com.cqupt.lark.browser.BrowserPageSupport;
 import com.cqupt.lark.location.repository.LocationRepository;
 import com.cqupt.lark.translation.model.entity.TestCase;
 import com.microsoft.playwright.Locator;

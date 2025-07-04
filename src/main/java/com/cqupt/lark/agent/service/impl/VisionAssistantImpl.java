@@ -15,27 +15,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Service
-@RequiredArgsConstructor
 public class VisionAssistantImpl implements VisionAssistant {
 
-    @Value("${open-ai.doubao-vision.base-url}")
-    private String baseUrl;
-    @Value("${open-ai.doubao-vision.api-key}")
-    private String apiKey;
-    @Value("${open-ai.doubao-vision.model-name}")
-    private String modelName;
+    private final OpenAiChatModel model;
+
+    public VisionAssistantImpl(
+            @Value("${open-ai.doubao.base-url}") String baseUrl,
+            @Value("${open-ai.doubao.api-key}") String apiKey,
+            @Value("${open-ai.doubao.model-name}") String modelName) {
+        model = OpenAiChatModel.builder()
+                .baseUrl(baseUrl)
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .build();
+    }
 
 
     @Override
     public String chatByVision(String InputMessage, byte[] imageData) throws IOException {
 
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                .baseUrl(baseUrl)
-                .apiKey(apiKey)
-                .modelName(modelName)
-                .logRequests(true)
-                .logResponses(true)
-                .build();
         String prompt;
 
         try (InputStream inputStream = AssistantImpl.class
@@ -55,13 +53,6 @@ public class VisionAssistantImpl implements VisionAssistant {
     @Override
     public String chatWithValidate(String inputMessage, byte[] imageData) throws IOException {
 
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                .baseUrl(baseUrl)
-                .apiKey(apiKey)
-                .modelName(modelName)
-                .logRequests(true)
-                .logResponses(true)
-                .build();
         String prompt;
 
         try (InputStream inputStream = AssistantImpl.class
@@ -79,14 +70,6 @@ public class VisionAssistantImpl implements VisionAssistant {
 
     @Override
     public String chatWithAssert(String inputMessage, byte[] imageData) throws IOException {
-
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                .baseUrl(baseUrl)
-                .apiKey(apiKey)
-                .modelName(modelName)
-                .logRequests(true)
-                .logResponses(true)
-                .build();
 
         String prompt;
         try (InputStream inputStream = AssistantImpl.class

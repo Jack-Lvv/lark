@@ -1,4 +1,4 @@
-package com.cqupt.lark.browser.service;
+package com.cqupt.lark.browser;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;

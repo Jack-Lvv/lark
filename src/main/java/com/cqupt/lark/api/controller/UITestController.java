@@ -4,7 +4,7 @@ import com.cqupt.lark.api.model.dto.RequestDTO;
 import com.cqupt.lark.api.model.vo.ResponseVO;
 import com.cqupt.lark.assertion.model.entity.AssertResult;
 import com.cqupt.lark.assertion.service.AssertService;
-import com.cqupt.lark.browser.service.BrowserPageSupport;
+import com.cqupt.lark.browser.BrowserPageSupport;
 import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.translation.model.entity.TestCase;

@@ -1,6 +1,6 @@
 package com.cqupt.lark.execute.service.impl;
 
-import com.cqupt.lark.browser.service.BrowserPageSupport;
+import com.cqupt.lark.browser.BrowserPageSupport;
 import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.location.service.LocatorService;
 import com.cqupt.lark.translation.model.entity.TestCase;
