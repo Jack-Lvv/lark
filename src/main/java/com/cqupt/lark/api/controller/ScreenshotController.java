@@ -30,10 +30,15 @@ public class ScreenshotController {
 
         executor.execute(() -> {
 
-            while (!browserPageSupport.getIsClosed() && browserPageSupport.getIsStarted()) {
+            while (!browserPageSupport.getIsClosed()) {
                 try {
                     // 截取页面截图
                     byte[] screenshot = browserPageSupport.screenshot();
+
+                    if (screenshot == null) {
+                        log.info("page已关闭");
+                        continue;
+                    }
 
                     // 转换为Base64
                     String base64Image = Base64.getEncoder().encodeToString(screenshot);

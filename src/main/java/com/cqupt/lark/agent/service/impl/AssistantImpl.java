@@ -25,7 +25,7 @@ public class AssistantImpl implements Assistant {
     @Value("${open-ai.doubao.model-name}")
     private String modelName;
 
-    private final OpenAiChatModel model = OpenAiChatModel.builder()
+    private OpenAiChatModel model = OpenAiChatModel.builder()
             .baseUrl(baseUrl)
             .apiKey(apiKey)
             .modelName(modelName)

@@ -19,14 +19,7 @@ public class BrowserPageSupport {
     // 使用 volatile 关键字确保多线程环境下的可见性
     private static volatile BrowserPageSupport instance;
     private volatile boolean isClosed = false;
-    private volatile boolean isStarted = false;
 
-    public void setStarted() {
-        isStarted = true;
-    }
-    public boolean getIsStarted() {
-        return isStarted;
-    }
     public void navigate(String url) {
         lock.lock();
         try {
@@ -37,9 +30,15 @@ public class BrowserPageSupport {
     }
 
     public byte[] screenshot() {
+        if (isClosed) {
+            return null;
+        }
         lock.lock();
+        if (isClosed) {
+            return null;
+        }
         try {
-            return page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+            return page.screenshot();
         } finally {
             lock.unlock();
         }
@@ -63,13 +62,14 @@ public class BrowserPageSupport {
             lock.unlock();
         }
     }
+
     private BrowserPageSupport() {
         // 获取项目根目录路径
         Path resourcesPath = Paths.get("src/main/resources/mock/auth.json").toAbsolutePath();
 
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-                .setHeadless(true)
+                        .setHeadless(true)
                 //.setChannel("chrome")
         );
         context = browser.newContext(new Browser.NewContextOptions()
@@ -96,15 +96,15 @@ public class BrowserPageSupport {
 
     public void close() {
         if (!isClosed) {
+            lock.lock();
             try {
                 if (page != null) page.close();
                 if (context != null) context.close();
                 if (browser != null) browser.close();
                 if (playwright != null) playwright.close();
-            } catch (Exception e) {
-                System.err.println("Error closing Playwright resources: " + e.getMessage());
             } finally {
-                isClosed = true; // 标记为已关闭
+                isClosed = true;
+                lock.unlock();
             }
         }
     }
@@ -171,6 +171,7 @@ public class BrowserPageSupport {
             lock.unlock();
         }
     }
+
     public Locator getLabelByText(String text) {
         lock.lock();
         try {
@@ -179,6 +180,7 @@ public class BrowserPageSupport {
             lock.unlock();
         }
     }
+
     public Locator getPlaceholderByText(String text) {
         lock.lock();
         try {
@@ -187,6 +189,7 @@ public class BrowserPageSupport {
             lock.unlock();
         }
     }
+
     public Locator getTestIdByText(String text) {
         lock.lock();
         try {

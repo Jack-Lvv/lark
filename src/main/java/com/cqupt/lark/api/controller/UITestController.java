@@ -48,7 +48,6 @@ public class UITestController {
         try {
 
             browserPageSupport.navigate(request.getUrl());
-            browserPageSupport.setStarted();
 
             String[] cases = SubStringUtils.subCasesStr(request.getDescription());
             int failureTimes = 0, index = 0;

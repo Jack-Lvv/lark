@@ -36,7 +36,7 @@ open-ai:
   doubao-vision:
     base-url: 'https://ark.cn-beijing.volces.com/api/v3'
     api-key: 'ec4c495e-e640-476a-b35b-228af0c5b457'
-    model-name: 'doubao-1.5-vision-pro-250328'
+    model-name: 'doubao-1-5-thinking-vision-pro-250428'
     log-requests: true
     log-responses: true
 offset:
