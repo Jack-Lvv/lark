@@ -33,7 +33,7 @@ public class ScreenshotController {
             while (!browserPageSupport.getIsClosed()) {
                 try {
                     // 截取页面截图
-                    byte[] screenshot = browserPageSupport.screenshot();
+                    byte[] screenshot = browserPageSupport.SSEScreenshot();
 
                     if (screenshot == null) {
                         log.info("page已关闭");
@@ -47,7 +47,7 @@ public class ScreenshotController {
                     emitter.send(SseEmitter.event()
                             .name("image")
                             .data(base64Image));
-                    log.info("发送截图成功");
+                    //log.info("发送截图成功");
 
                     Thread.sleep(100);
                 } catch (Exception e) {

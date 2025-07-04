@@ -4,7 +4,7 @@
 
 输出示例（json格式, 用于json对象转换，输出不允许有多余的内容）：
 {"caseType": "Click", "caseValue": "", "xUp": "99", "yUp":"9", "xDown": "110", "yDown": "19"}
-{"caseType": "Click", "caseValue": "", "xUp": "99", "yUp":"9", "xDown": "110", "yDown": "19"}
+{"caseType": "Fill", "caseValue": "15552", "xUp": "99", "yUp":"9", "xDown": "110", "yDown": "19"}
 
 对象介绍：
 caseType代表操作类型，包括：Click("点击元素"),Fill("填充文本")，

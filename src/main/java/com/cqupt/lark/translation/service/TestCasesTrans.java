@@ -8,11 +8,11 @@ import java.io.IOException;
 
 public interface TestCasesTrans {
 
-    String trans(String description, BrowserPageSupport browserPageSupport) throws IOException;
+    String trans(String description, BrowserPageSupport browserPageSupport) throws IOException, InterruptedException;
 
     TestCase transToJson(String outMessageByAi) throws IOException;
 
-    String transByVision(String aCase, BrowserPageSupport browserPageSupport) throws IOException;
+    String transByVision(String aCase, BrowserPageSupport browserPageSupport) throws IOException, InterruptedException;
 
     TestCaseVision transToJsonWithVision(String standardCases);
 }

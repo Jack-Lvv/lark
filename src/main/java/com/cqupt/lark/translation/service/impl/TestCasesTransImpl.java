@@ -26,7 +26,7 @@ public class TestCasesTransImpl implements TestCasesTrans {
     private final Assistant assistant;
     private final VisionAssistant visionAssistant;
     @Override
-    public String trans(String description, BrowserPageSupport browserPageSupport) throws IOException {
+    public String trans(String description, BrowserPageSupport browserPageSupport) throws IOException, InterruptedException {
 
         String htmlContext = browserPageSupport.getContent();
         String subHtmlContext = subHtmlContext(htmlContext);
@@ -44,7 +44,7 @@ public class TestCasesTransImpl implements TestCasesTrans {
     }
 
     @Override
-    public String transByVision(String aCase, BrowserPageSupport browserPageSupport) throws IOException {
+    public String transByVision(String aCase, BrowserPageSupport browserPageSupport) throws IOException, InterruptedException {
         String outMessageByAi = visionAssistant.chatByVision(aCase, browserPageSupport.screenshot());
         log.info("视觉大模型输出测试用例的json格式: {}", outMessageByAi);
         return outMessageByAi;

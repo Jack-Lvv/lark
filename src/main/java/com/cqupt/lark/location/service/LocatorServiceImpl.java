@@ -14,7 +14,7 @@ public class LocatorServiceImpl implements LocatorService {
     private final LocationRepository locationRepository;
 
     @Override
-    public Locator getLocatorByJson(TestCase testCase, BrowserPageSupport browserPageSupport) {
+    public Locator getLocatorByJson(TestCase testCase, BrowserPageSupport browserPageSupport) throws InterruptedException {
         return switch (testCase.getLocatorType()) {
             case Button -> locationRepository.getButtonByText(testCase.getLocatorValue(), browserPageSupport);
             case TextBox -> locationRepository.getTextBoxByText(testCase.getLocatorValue(), browserPageSupport);

@@ -1,5 +1,6 @@
 package com.cqupt.lark.browser;
 
+import com.cqupt.lark.common.PriorityLock;
 import com.cqupt.lark.util.CompressImageUtils;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
@@ -8,7 +9,6 @@ import com.microsoft.playwright.options.ScreenshotType;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class BrowserPageSupport {
 
@@ -16,14 +16,14 @@ public class BrowserPageSupport {
     private final Browser browser;
     private final BrowserContext context;
     private final Page page;
-    private final ReentrantLock lock = new ReentrantLock(true);
+    private final PriorityLock lock = new PriorityLock();
 
     // 使用 volatile 关键字确保多线程环境下的可见性
     private static volatile BrowserPageSupport instance;
     private volatile boolean isClosed = false;
 
-    public void navigate(String url) {
-        lock.lock();
+    public void navigate(String url) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             page.navigate(url);
         } finally {
@@ -31,14 +31,26 @@ public class BrowserPageSupport {
         }
     }
 
-    public byte[] screenshot() {
+    public byte[] SSEScreenshot() throws InterruptedException {
         if (isClosed) {
             return null;
         }
-        lock.lock();
+        lock.lockLowPriority();
         if (isClosed) {
             return null;
         }
+        try {
+            return page.screenshot(new Page.ScreenshotOptions()
+                    .setType(ScreenshotType.JPEG)
+                    .setQuality(80)
+                    .setFullPage(true));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public byte[] screenshot() throws InterruptedException {
+        lock.lockHighPriority();
         try {
             byte[] screenshot = page.screenshot(new Page.ScreenshotOptions()
                     .setType(ScreenshotType.JPEG)
@@ -52,8 +64,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public void click(int x, int y) {
-        lock.lock();
+    public void click(int x, int y) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             page.mouse().click(x, y);
         } finally {
@@ -61,8 +73,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public void fill(int x, int y, String text) {
-        lock.lock();
+    public void fill(int x, int y, String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             page.mouse().click(x, y);
             page.keyboard().type(text);
@@ -102,9 +114,9 @@ public class BrowserPageSupport {
         return isClosed;
     }
 
-    public void close() {
+    public void close() throws InterruptedException {
         if (!isClosed) {
-            lock.lock();
+            lock.lockHighPriority();
             try {
                 if (page != null) page.close();
                 if (context != null) context.close();
@@ -117,8 +129,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public void evaluate(String s, List<Integer> list) {
-        lock.lock();
+    public void evaluate(String s, List<Integer> list) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             page.evaluate(s, list);
         } finally {
@@ -126,8 +138,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public String getContent() {
-        lock.lock();
+    public String getContent() throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.content();
         } finally {
@@ -135,8 +147,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public void locatorClick(Locator locator) {
-        lock.lock();
+    public void locatorClick(Locator locator) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             locator.click();
         } finally {
@@ -144,8 +156,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public void locatorFill(Locator locator, String locatorValue) {
-        lock.lock();
+    public void locatorFill(Locator locator, String locatorValue) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             locator.fill(locatorValue);
         } finally {
@@ -153,8 +165,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public Locator getByRole(AriaRole role, String text) {
-        lock.lock();
+    public Locator getByRole(AriaRole role, String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.getByRole(role, new Page.GetByRoleOptions().setName(text));
         } finally {
@@ -162,8 +174,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public Locator getByText(String text) {
-        lock.lock();
+    public Locator getByText(String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.getByText(text);
         } finally {
@@ -171,8 +183,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public Locator getByLocator(String text) {
-        lock.lock();
+    public Locator getByLocator(String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.locator(text);
         } finally {
@@ -180,8 +192,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public Locator getLabelByText(String text) {
-        lock.lock();
+    public Locator getLabelByText(String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.getByLabel(text);
         } finally {
@@ -189,8 +201,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public Locator getPlaceholderByText(String text) {
-        lock.lock();
+    public Locator getPlaceholderByText(String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.getByPlaceholder(text);
         } finally {
@@ -198,8 +210,8 @@ public class BrowserPageSupport {
         }
     }
 
-    public Locator getTestIdByText(String text) {
-        lock.lock();
+    public Locator getTestIdByText(String text) throws InterruptedException {
+        lock.lockHighPriority();
         try {
             return page.getByTestId(text);
         } finally {

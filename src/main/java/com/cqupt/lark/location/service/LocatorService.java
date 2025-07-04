@@ -6,6 +6,6 @@ import com.microsoft.playwright.Locator;
 
 public interface LocatorService {
 
-    Locator getLocatorByJson(TestCase testCase, BrowserPageSupport browserPageSupport);
+    Locator getLocatorByJson(TestCase testCase, BrowserPageSupport browserPageSupport) throws InterruptedException;
 
 }

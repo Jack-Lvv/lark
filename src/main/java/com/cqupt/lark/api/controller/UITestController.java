@@ -39,7 +39,7 @@ public class UITestController {
     private int maxFailureTimes;
 
     @PostMapping("/api/test")
-    public ResponseVO test(@RequestBody RequestDTO request) {
+    public ResponseVO test(@RequestBody RequestDTO request) throws InterruptedException {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
         log.info("预期结果描述: {}", request.getExpectedResult());

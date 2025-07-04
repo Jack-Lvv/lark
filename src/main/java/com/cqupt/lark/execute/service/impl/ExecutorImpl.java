@@ -20,7 +20,7 @@ public class ExecutorImpl implements TestExecutorService {
     private final LocatorService locatorService;
 
     @Override
-    public Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport) {
+    public Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport) throws InterruptedException {
         Locator locator = locatorService.getLocatorByJson(testCase, browserPageSupport);
         if (locator == null) {
             return false;
@@ -41,7 +41,7 @@ public class ExecutorImpl implements TestExecutorService {
     }
 
     @Override
-    public boolean executeWithVision(TestCaseVision testCaseVision, BrowserPageSupport browserPageSupport) {
+    public boolean executeWithVision(TestCaseVision testCaseVision, BrowserPageSupport browserPageSupport) throws InterruptedException {
         int x1 = testCaseVision.getXUp();
         int y1 = testCaseVision.getYUp();
         int x2 = testCaseVision.getXDown();

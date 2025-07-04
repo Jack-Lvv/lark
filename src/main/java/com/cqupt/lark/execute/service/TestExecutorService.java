@@ -6,7 +6,7 @@ import com.cqupt.lark.translation.model.entity.TestCaseVision;
 
 public interface TestExecutorService {
 
-    Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport);
+    Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport) throws InterruptedException;
 
-    boolean executeWithVision(TestCaseVision testCaseVision, BrowserPageSupport browserPageSupport);
+    boolean executeWithVision(TestCaseVision testCaseVision, BrowserPageSupport browserPageSupport) throws InterruptedException;
 }
