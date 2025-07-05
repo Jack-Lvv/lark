@@ -1,7 +1,6 @@
 package com.cqupt.lark.api.controller;
 
 import com.cqupt.lark.api.model.dto.RequestDTO;
-import com.cqupt.lark.api.model.vo.ResponseVO;
 import com.cqupt.lark.assertion.model.entity.AssertResult;
 import com.cqupt.lark.assertion.service.AssertService;
 import com.cqupt.lark.browser.BrowserPageSupport;
@@ -16,13 +15,14 @@ import com.cqupt.lark.validate.service.ValidateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -38,40 +38,70 @@ public class UITestController {
     @Value("${app.config.max-retry-times}")
     private int maxFailureTimes;
 
-    @PostMapping("/api/test")
-    public ResponseVO test(@RequestBody RequestDTO request) throws InterruptedException {
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+    @GetMapping(value = "/api/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter test(RequestDTO request) {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
         log.info("预期结果描述: {}", request.getExpectedResult());
-        String url = request.getUrl();
+        final String url;
 
         // 避免url报错
-        if (!url.startsWith("https://") && !url.startsWith("http://")) {
-            url = "https://" + url;
+        if (!request.getUrl().startsWith("https://") && !request.getUrl().startsWith("http://")) {
+            url = "https://" + request.getUrl();
+        } else {
+            url = request.getUrl();
         }
 
-        BrowserPageSupport browserPageSupport = BrowserPageSupport.getInstance();
-        try {
+        SseEmitter emitter = new SseEmitter();
 
-            browserPageSupport.navigate(url);
+        executor.execute(() -> {
+            BrowserPageSupport browserPageSupport = BrowserPageSupport.getInstance();
+
+            try {
+                browserPageSupport.navigate(url);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
 
             String[] cases = SubStringUtils.subCasesStr(request.getDescription());
             int failureTimes = 0, index = 0;
-            List<TestResult> testResults = new ArrayList<>();
 
             while (index < cases.length && failureTimes <= maxFailureTimes) {
-                log.info("开始测试第{}个用例: {}", index + 1, cases[index]);
+                log.info("开始执行第{}个操作: {}", index + 1, cases[index]);
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("result")
+                            .data(Map.of("state", true,
+                                    "text","开始执行操作：" + cases[index])));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
 
-                String standardStr = testCasesTrans.transByVision(cases[index], browserPageSupport);
+                String standardStr;
+                try {
+                    standardStr = testCasesTrans.transByVision(cases[index], browserPageSupport);
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 TestCaseVision testCaseVision;
                 try {
                     String standardCases = SubStringUtils.subCasesUselessPart(standardStr);
                     testCaseVision = testCasesTrans.transToJsonWithVision(standardCases);
-                } catch (Exception e) {
+                } catch (Throwable t) {
                     failureTimes++;
-                    log.error("第{}个用例json转换失败: {}", index + 1, e.getMessage());
+                    log.error("第{}个操作json转换失败: {}", index + 1, t.getMessage());
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("result")
+                                .data(Map.of("state",false,
+                                        "text","json数据转换失败，准备进行重试...")));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     continue;
                 }
 
@@ -80,78 +110,126 @@ public class UITestController {
 
                 TestResult testResult = new TestResult();
                 //if (executor.execute(testCase, page)) {
-                if (testExecutorService.executeWithVision(testCaseVisionCorrected, browserPageSupport)) {
-                    testResult = validateService.validate(browserPageSupport.screenshot(), cases[index]);
-                } else {
-                    testResult.setStatus(false);
-                    testResult.setDescription("定位组件失败");
+                try {
+                    if (testExecutorService.executeWithVision(testCaseVisionCorrected, browserPageSupport)) {
+                        testResult = validateService.validate(browserPageSupport.screenshot(), cases[index]);
+                    } else {
+                        testResult.setStatus(false);
+                        testResult.setDescription("准备进行重试...");
+                    }
+                } catch (InterruptedException | IOException e) {
+                    throw new RuntimeException(e);
                 }
 
-                testResults.add(testResult);
                 if (testResult.getStatus()) {
                     index++;
                     failureTimes = 0;
-                    log.info("测试#{}成功...", index);
+                    log.info("操作#{}成功...", index);
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("result")
+                                .data(Map.of("state", true,
+                                        "text","操作执行成功，" + testResult.getDescription())));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else {
                     failureTimes++;
                     log.info("测试#{}失败，进行重试...", index + 1);
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("result")
+                                .data(Map.of("state", false,
+                                        "text","操作执行失败，" + testResult.getDescription())));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
 
                 // 重试次数满后，进行兜底定位操作
                 if (failureTimes > maxFailureTimes) {
                     log.info("开始进行兜底定位...");
                     try {
+                        emitter.send(SseEmitter.event()
+                                .name("result")
+                                .data(Map.of("state",true,
+                                        "text","开始进行前端源码定位...")));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
                         String standardCases = testCasesTrans.trans(cases[index], browserPageSupport);
                         String casesAfterCorrect = SubStringUtils.subCasesUselessPart(standardCases);
                         TestCase testCase = testCasesTrans.transToJson(casesAfterCorrect);
-                        testExecutorService.execute(testCase, browserPageSupport);
+                        Boolean resultBoolean = testExecutorService.execute(testCase, browserPageSupport);
                         TestResult testResultByOCR = validateService.validate(browserPageSupport.screenshot(), cases[index]);
-                        if (!testResult.getStatus()) {
-                            throw new Exception("执行操作失败，"+ testResultByOCR.getDescription());
+                        if (!resultBoolean) {
+                            throw new Exception("源码定位失败");
+                        } else if (!testResultByOCR.getStatus()) {
+                            throw new Exception("操作执行失败，" + testResultByOCR.getDescription());
                         } else {
                             index++;
                             failureTimes = 0;
                             log.info("测试#{}成功...", index + 1);
+                            emitter.send(SseEmitter.event()
+                                    .name("result")
+                                    .data(Map.of("state", true,
+                                            "text", "操作执行成功，" + testResultByOCR.getDescription())));
                         }
                     } catch (Throwable t) {
-                        log.info("兜底定位失败: {}", t.getMessage());
+                        log.info(t.getMessage());
+                        try {
+                            emitter.send(SseEmitter.event()
+                                    .name("result")
+                                    .data(Map.of("state", false,
+                                            "text", t.getMessage())));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
 
             AssertResult assertResult = null;
             if (failureTimes > maxFailureTimes) {
-                testResults.add(TestResult.builder()
-                        .status(false)
-                        .description("达到最大重试次数仍未执行成功")
-                        .build());
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("result")
+                            .data(Map.of("state", false,
+                                    "text","执行失败，达到最大重试次数仍未执行成功")));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (request.getExpectedResult() != null && !request.getExpectedResult().isEmpty()) {
-                assertResult = assertService.assertByVision(browserPageSupport.screenshot(), request.getExpectedResult());
+                try {
+                    assertResult = assertService.assertByVision(browserPageSupport.screenshot(), request.getExpectedResult());
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
-
-            if (assertResult != null) {
-                return ResponseVO.builder()
-                        .success(true)
-                        .message(testResults.toString())
-                        // .video("videos/ZongBianShi-HuYongQiu_9b7a98caab886e25f0efe8992df6ae80.mp4")
-                        .assertMessage(assertResult.toString())
-                        .build();
-            } else {
-                return ResponseVO.builder()
-                        .success(true)
-                        .message(testResults.toString())
-                        // .video("videos/ZongBianShi-HuYongQiu_9b7a98caab886e25f0efe8992df6ae80.mp4")
-                        .assertMessage("预期结果为空，未执行断言")
-                        .build();
+            if (assertResult != null && assertResult.getStatus()) {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("result")
+                            .data(Map.of("state", true,
+                                    "text","断言成功，" + assertResult.getDescription())));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (assertResult != null) {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("result")
+                            .data(Map.of("state", false,
+                                    "text","断言失败，" + assertResult.getDescription())));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-
-        } catch (Exception e) {
-            return ResponseVO.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .build();
-        }
+        });
+        return emitter;
 
     }
-
 }
+
+

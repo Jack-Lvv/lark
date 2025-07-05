@@ -168,18 +168,6 @@
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
 
-        #result {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 6px;
-            display: none;
-            width: 100%;
-            max-width: 100%;
-            text-align: center;
-            box-sizing: border-box;
-            word-wrap: break-word;
-        }
-
         @media (max-width: 767px) {
             .form-group {
                 margin-bottom: 15px; /* 减小间距 */
@@ -193,18 +181,6 @@
                 width: 100%; /* 全宽按钮 */
                 padding: 14px; /* 增大点击区域 */
             }
-        }
-
-        .success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #c8e6c9;
-        }
-
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ffcdd2;
         }
 
         #img {
@@ -221,6 +197,63 @@
         #img:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 6px;
+            display: none;
+            width: 100%;
+            max-width: 100%;
+            text-align: left; /* 改为左对齐 */
+            box-sizing: border-box;
+            word-wrap: break-word;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            max-height: 120px; /* 限制高度实现滚动效果 */
+            overflow-y: auto;
+        }
+
+        #result-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #result-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.5s ease;
+            border-bottom: 1px solid #eee;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-dot.true {
+            background-color: #2ecc71; /* 绿色圆点 */
+        }
+
+        .status-dot.false {
+            background-color: #e74c3c; /* 红色圆点 */
         }
     </style>
 </head>
@@ -252,7 +285,9 @@
 
     <div class="image-container">
         <img id="img" width="400" style="display: none;"/>
-        <div id="result"></div>
+        <div id="result">
+            <ul id="result-list"></ul>
+        </div>
     </div>
 </div>
 
@@ -272,7 +307,8 @@
         console.error("SSE Error:", e);
     };
 
-    // 其他
+    // 在全局作用域声明变量存储当前 SSE 连接
+    let currentSSE = null;
     document.getElementById('testForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -280,40 +316,57 @@
         const description = document.getElementById('description').value;
         const expectedResult = document.getElementById('expectedResult').value;
 
-        // 隐藏之前的结果
-        document.getElementById('result').style.display = 'none';
+        // 显示结果容器
+        const resultDiv = document.getElementById('result');
+        const resultList = document.getElementById('result-list');
 
-        fetch(window.location.origin + '/api/test', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                url: url,
-                description: description,
-                expectedResult: expectedResult
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                const resultDiv = document.getElementById('result');
-                if (data.success) {
-                    resultDiv.className = 'success';
-                    resultDiv.innerHTML = `<p>${data.message}</p>`;
-                } else {
-                    resultDiv.className = 'error';
-                    resultDiv.innerHTML = `<p>测试失败: ${data.message || '未知错误'}</p>`;
-                }
-                resultDiv.style.display = 'block';
-            })
-            .catch(error => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.className = 'error';
-                resultDiv.innerHTML = `<p>请求失败: ${error.message}</p>`;
-                resultDiv.style.display = 'block';
+        // 清空现有结果
+        resultList.innerHTML = '';
+        resultDiv.style.display = 'block';
 
-                console.error('Error:', error);
-            });
+        // 关闭之前的 SSE 连接（如果存在）
+        if (currentSSE) {
+            currentSSE.close();
+        }
+
+        const params = new URLSearchParams();
+        params.append('url', url);
+        params.append('description', description);
+        if (expectedResult) {
+            params.append('expectedResult', expectedResult);
+        }
+
+        currentSSE = new EventSource(`/api/test?${params.toString()}`);
+
+        currentSSE.addEventListener("result", function (event) {
+            const data = JSON.parse(event.data);
+
+            // 创建新结果项
+            const li = document.createElement('li');
+
+            // 添加状态圆点
+            const dot = document.createElement('span');
+            dot.className = `status-dot ${data.state}`;
+            li.appendChild(dot);
+
+            // 添加文本内容
+            const text = document.createTextNode(data.text);
+            li.appendChild(text);
+
+            // 添加到列表顶部
+            resultList.insertBefore(li, resultList.firstChild);
+
+            // 限制只显示两条结果
+            if (resultList.children.length > 2) {
+                resultList.removeChild(resultList.lastChild);
+            }
+        });
+
+        currentSSE.onerror = function (err) {
+            console.error('SSE error:', err);
+            currentSSE.close();
+            currentSSE = null;
+        };
     });
 </script>
 </body>
