@@ -22,6 +22,8 @@ app:
     cross-origin: '*'
     # 模型最大重试次数
     max-retry-times: 3
+    # SSE推送帧率
+    sse-fps: 24
 
 server:
   port: 80

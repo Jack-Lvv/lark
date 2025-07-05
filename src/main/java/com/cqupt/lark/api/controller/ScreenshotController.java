@@ -3,6 +3,7 @@ package com.cqupt.lark.api.controller;
 import com.cqupt.lark.browser.BrowserPageSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,10 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class ScreenshotController {
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+
+    @Value("${app.config.sse-fps}")
+    private int FPS;
 
     @GetMapping(value = "/screenshots", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamScreenshots() {
@@ -31,6 +35,7 @@ public class ScreenshotController {
         executor.execute(() -> {
 
             while (!browserPageSupport.getIsClosed()) {
+                long startTime = System.currentTimeMillis();
                 try {
                     // 截取页面截图
                     byte[] screenshot = browserPageSupport.SSEScreenshot();
@@ -49,7 +54,11 @@ public class ScreenshotController {
                             .data(base64Image));
                     //log.info("发送截图成功");
 
-                    Thread.sleep(100);
+                    // 帧率控制
+                    long processingTime = System.currentTimeMillis() - startTime;
+                    long sleepTime = Math.max(0, 1000 / FPS - processingTime);
+                    Thread.sleep(sleepTime);
+
                 } catch (Exception e) {
                     emitter.completeWithError(e);
                     break;

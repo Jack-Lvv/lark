@@ -14,14 +14,14 @@ public class PriorityLock {
     // 高优先级获取锁
     public void lockHighPriority() throws InterruptedException {
         lock.lock();
+        highPriorityWaiters++;
         try {
-            highPriorityWaiters++;
             while (isLocked) {
                 highPriorityCond.await(); // 等待
             }
-            highPriorityWaiters--;
             isLocked = true;
         } finally {
+            highPriorityWaiters--;
             lock.unlock();
         }
     }
@@ -45,7 +45,7 @@ public class PriorityLock {
         try {
             isLocked = false;
             if (highPriorityWaiters > 0) {
-                highPriorityCond.signalAll(); // 先唤醒高优先级
+                highPriorityCond.signal(); // 先唤醒高优先级，只唤醒一个线程，防止惊群效应
             } else {
                 lowPriorityCond.signal(); // 再唤醒低优先级
             }

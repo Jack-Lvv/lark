@@ -43,11 +43,17 @@ public class UITestController {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
         log.info("预期结果描述: {}", request.getExpectedResult());
+        String url = request.getUrl();
+
+        // 避免url报错
+        if (!url.startsWith("https://") && !url.startsWith("http://")) {
+            url = "https://" + url;
+        }
 
         BrowserPageSupport browserPageSupport = BrowserPageSupport.getInstance();
         try {
 
-            browserPageSupport.navigate(request.getUrl());
+            browserPageSupport.navigate(url);
 
             String[] cases = SubStringUtils.subCasesStr(request.getDescription());
             int failureTimes = 0, index = 0;
