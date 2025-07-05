@@ -19,9 +19,9 @@ public class VisionAssistantImpl implements VisionAssistant {
     private final OpenAiChatModel model;
 
     public VisionAssistantImpl(
-            @Value("${open-ai.doubao.base-url}") String baseUrl,
-            @Value("${open-ai.doubao.api-key}") String apiKey,
-            @Value("${open-ai.doubao.model-name}") String modelName) {
+            @Value("${open-ai.doubao-vision.base-url}") String baseUrl,
+            @Value("${open-ai.doubao-vision.api-key}") String apiKey,
+            @Value("${open-ai.doubao-vision.model-name}") String modelName) {
         model = OpenAiChatModel.builder()
                 .baseUrl(baseUrl)
                 .apiKey(apiKey)
@@ -29,13 +29,20 @@ public class VisionAssistantImpl implements VisionAssistant {
                 .build();
     }
 
+//    private final OllamaChatModel model;
+//    public VisionAssistantImpl() {
+//        model = OllamaChatModel.builder()
+//                .baseUrl("http://localhost:11434")
+//                .modelName("qwen2.5vl:7b-q8_0").build();
+//            }
+
 
     @Override
     public String chatByVision(String InputMessage, byte[] imageData) throws IOException {
 
         String prompt;
 
-        try (InputStream inputStream = AssistantImpl.class
+        try (InputStream inputStream = VisionAssistantImpl.class
                 .getClassLoader()
                 .getResourceAsStream("prompt/trans-by-vision.txt")) {
             if (inputStream == null) {
@@ -45,7 +52,7 @@ public class VisionAssistantImpl implements VisionAssistant {
         }
 
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpeg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(InputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
 
@@ -54,7 +61,7 @@ public class VisionAssistantImpl implements VisionAssistant {
 
         String prompt;
 
-        try (InputStream inputStream = AssistantImpl.class
+        try (InputStream inputStream = VisionAssistantImpl.class
                 .getClassLoader()
                 .getResourceAsStream("prompt/validate.txt")) {
             if (inputStream == null) {
@@ -63,7 +70,7 @@ public class VisionAssistantImpl implements VisionAssistant {
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpeg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
 
@@ -71,7 +78,7 @@ public class VisionAssistantImpl implements VisionAssistant {
     public String chatWithAssert(String inputMessage, byte[] imageData) throws IOException {
 
         String prompt;
-        try (InputStream inputStream = AssistantImpl.class
+        try (InputStream inputStream = VisionAssistantImpl.class
                 .getClassLoader()
                 .getResourceAsStream("prompt/assertion.txt")) {
             if (inputStream == null) {
@@ -80,8 +87,7 @@ public class VisionAssistantImpl implements VisionAssistant {
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpeg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
-
     }
 }

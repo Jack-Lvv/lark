@@ -30,6 +30,13 @@ public class AssistantImpl implements Assistant {
                 .modelName(modelName)
                 .build();
     }
+//private final OllamaChatModel model;
+//
+//    public AssistantImpl() {
+//        model = OllamaChatModel.builder()
+//                .baseUrl("http://localhost:11434")
+//                .modelName("qwen2.5vl:7b-q8_0").build();
+//    }
 
     @Override
     public String chatWithTranslation(String InputMessage, String HtmlContext) throws IOException {
@@ -59,7 +66,7 @@ public class AssistantImpl implements Assistant {
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpeg");
         return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
     }
 
@@ -71,7 +78,7 @@ public class AssistantImpl implements Assistant {
     @Override
     public String chatWithPicture(String InputMessage, byte[] imageData) {
         String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/jpg");
+        ImageContent imageContent = ImageContent.from(base64Data, "image/jpeg");
         UserMessage imageMessage = UserMessage.from(imageContent);
         return model.chat(imageMessage, UserMessage.from(InputMessage)).aiMessage().text();
     }
@@ -98,7 +105,7 @@ public class AssistantImpl implements Assistant {
     public String chatWithVideoAndPicture(String InputMessage, byte[] imageData, byte[] videoData) {
         String base64ImageData = Base64.getEncoder().encodeToString(imageData);
         String base64VideoData = Base64.getEncoder().encodeToString(videoData);
-        ImageContent imageContent = ImageContent.from(base64ImageData, "image/jpg");
+        ImageContent imageContent = ImageContent.from(base64ImageData, "image/jpeg");
         UserMessage imageMessage = UserMessage.from(imageContent);
         VideoContent videoContent = VideoContent.from(base64VideoData, "video/mp4");
         UserMessage videoMessage = UserMessage.from(videoContent);

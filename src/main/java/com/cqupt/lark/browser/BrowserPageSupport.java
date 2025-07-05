@@ -43,7 +43,7 @@ public class BrowserPageSupport {
             return page.screenshot(new Page.ScreenshotOptions()
                     .setType(ScreenshotType.JPEG)
                     .setQuality(80)
-                    .setFullPage(true));
+            );
         } finally {
             lock.unlock();
         }

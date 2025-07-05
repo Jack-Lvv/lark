@@ -85,7 +85,7 @@ public class UITestController {
                 if (testResult.getStatus()) {
                     index++;
                     failureTimes = 0;
-                    log.info("测试#{}成功...", index + 1);
+                    log.info("测试#{}成功...", index);
                 } else {
                     failureTimes++;
                     log.info("测试#{}失败，进行重试...", index + 1);
@@ -144,8 +144,6 @@ public class UITestController {
                     .success(false)
                     .message(e.getMessage())
                     .build();
-        } finally {
-            browserPageSupport.close();
         }
 
     }

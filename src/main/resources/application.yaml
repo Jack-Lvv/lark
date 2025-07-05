@@ -21,7 +21,7 @@ app:
     # 跨域，开发阶段可以设置为 * 不限制
     cross-origin: '*'
     # 模型最大重试次数
-    max-retry-times: 1
+    max-retry-times: 3
 
 server:
   port: 80
@@ -39,6 +39,13 @@ open-ai:
     model-name: 'doubao-1-5-vision-pro-250328'
     log-requests: true
     log-responses: true
+#  doubao-vision:
+#    base-url: 'http://localhost:11434'
+#    api-key: ''
+#    model-name: 'qwen2.5vl:7b-q8_0'
+#    log-requests: true
+#    log-responses: true
+
 offset:
   xOffset: 0
   yOffset: 0
