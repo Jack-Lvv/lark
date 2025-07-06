@@ -4,23 +4,28 @@ import com.cqupt.lark.api.model.dto.RequestDTO;
 import com.cqupt.lark.assertion.model.entity.AssertResult;
 import com.cqupt.lark.assertion.service.AssertService;
 import com.cqupt.lark.browser.BrowserPageSupport;
+import com.cqupt.lark.exception.BusinessException;
+import com.cqupt.lark.exception.enums.ExceptionEnum;
 import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
 import com.cqupt.lark.translation.service.TestCasesTrans;
+import com.cqupt.lark.util.EmitterSendUtils;
 import com.cqupt.lark.util.OffsetCorrectUtils;
 import com.cqupt.lark.util.SubStringUtils;
+import com.cqupt.lark.util.UrlStringAdder;
 import com.cqupt.lark.validate.service.ValidateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -44,14 +49,6 @@ public class UITestController {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
         log.info("预期结果描述: {}", request.getExpectedResult());
-        final String url;
-
-        // 避免url报错
-        if (!request.getUrl().startsWith("https://") && !request.getUrl().startsWith("http://")) {
-            url = "https://" + request.getUrl();
-        } else {
-            url = request.getUrl();
-        }
 
         SseEmitter emitter = new SseEmitter();
 
@@ -59,9 +56,9 @@ public class UITestController {
             BrowserPageSupport browserPageSupport = BrowserPageSupport.getInstance();
 
             try {
-                browserPageSupport.navigate(url);
+                browserPageSupport.navigate(UrlStringAdder.urlStrAdd(request.getUrl()));
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                throw new BusinessException(ExceptionEnum.NAVIGATE_ERROR);
             }
 
 
@@ -71,20 +68,18 @@ public class UITestController {
             while (index < cases.length && failureTimes <= maxFailureTimes) {
                 log.info("开始执行第{}个操作: {}", index + 1, cases[index]);
                 try {
-                    emitter.send(SseEmitter.event()
-                            .name("result")
-                            .data(Map.of("state", true,
-                                    "text","开始执行操作：" + cases[index])));
+                    EmitterSendUtils.send(emitter, "result", true, "开始执行操作：" + cases[index]);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                 }
-
 
                 String standardStr;
                 try {
                     standardStr = testCasesTrans.transByVision(cases[index], browserPageSupport);
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new BusinessException(ExceptionEnum.PROMPT_ERROR);
+                } catch (InterruptedException e) {
+                    throw new BusinessException(ExceptionEnum.SCREENSHOT_ERROR);
                 }
 
                 TestCaseVision testCaseVision;
@@ -95,12 +90,9 @@ public class UITestController {
                     failureTimes++;
                     log.error("第{}个操作json转换失败: {}", index + 1, t.getMessage());
                     try {
-                        emitter.send(SseEmitter.event()
-                                .name("result")
-                                .data(Map.of("state",false,
-                                        "text","json数据转换失败，准备进行重试...")));
+                        EmitterSendUtils.send(emitter, "result", false, "json数据转换失败，准备进行重试...");
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                     }
                     continue;
                 }
@@ -117,8 +109,10 @@ public class UITestController {
                         testResult.setStatus(false);
                         testResult.setDescription("准备进行重试...");
                     }
-                } catch (InterruptedException | IOException e) {
-                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new BusinessException(ExceptionEnum.PROMPT_ERROR);
+                } catch (InterruptedException e) {
+                    throw new BusinessException(ExceptionEnum.SCREENSHOT_ERROR);
                 }
 
                 if (testResult.getStatus()) {
@@ -126,23 +120,19 @@ public class UITestController {
                     failureTimes = 0;
                     log.info("操作#{}成功...", index);
                     try {
-                        emitter.send(SseEmitter.event()
-                                .name("result")
-                                .data(Map.of("state", true,
-                                        "text","操作执行成功，" + testResult.getDescription())));
+                        EmitterSendUtils.send(emitter, "result", true,
+                                "操作执行成功，" + testResult.getDescription());
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                     }
                 } else {
                     failureTimes++;
                     log.info("测试#{}失败，进行重试...", index + 1);
                     try {
-                        emitter.send(SseEmitter.event()
-                                .name("result")
-                                .data(Map.of("state", false,
-                                        "text","操作执行失败，" + testResult.getDescription())));
+                        EmitterSendUtils.send(emitter, "result", false,
+                                "操作执行失败，" + testResult.getDescription());
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                     }
                 }
 
@@ -150,12 +140,9 @@ public class UITestController {
                 if (failureTimes > maxFailureTimes) {
                     log.info("开始进行兜底定位...");
                     try {
-                        emitter.send(SseEmitter.event()
-                                .name("result")
-                                .data(Map.of("state",true,
-                                        "text","开始进行前端源码定位...")));
+                        EmitterSendUtils.send(emitter, "result", true, "开始进行前端源码定位...");
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                     }
                     try {
                         String standardCases = testCasesTrans.trans(cases[index], browserPageSupport);
@@ -171,21 +158,13 @@ public class UITestController {
                             index++;
                             failureTimes = 0;
                             log.info("测试#{}成功...", index + 1);
-                            emitter.send(SseEmitter.event()
-                                    .name("result")
-                                    .data(Map.of("state", true,
-                                            "text", "操作执行成功，" + testResultByOCR.getDescription())));
+                            EmitterSendUtils.send(emitter, "result",
+                                    true, "操作执行成功，" + testResultByOCR.getDescription());
+
                         }
                     } catch (Throwable t) {
                         log.info(t.getMessage());
-                        try {
-                            emitter.send(SseEmitter.event()
-                                    .name("result")
-                                    .data(Map.of("state", false,
-                                            "text", t.getMessage())));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        throw new BusinessException(ExceptionEnum.CODE_LOCATION_ERROR);
                     }
                 }
             }
@@ -193,40 +172,36 @@ public class UITestController {
             AssertResult assertResult = null;
             if (failureTimes > maxFailureTimes) {
                 try {
-                    emitter.send(SseEmitter.event()
-                            .name("result")
-                            .data(Map.of("state", false,
-                                    "text","执行失败，达到最大重试次数仍未执行成功")));
+                    EmitterSendUtils.send(emitter, "result",
+                            false, "执行失败，达到最大重试次数仍未执行成功");
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                 }
             } else if (request.getExpectedResult() != null && !request.getExpectedResult().isEmpty()) {
                 try {
                     assertResult = assertService.assertByVision(browserPageSupport.screenshot(), request.getExpectedResult());
                 } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
+                    throw new BusinessException(ExceptionEnum.ASSERT_ERROR);
                 }
             }
+
             if (assertResult != null && assertResult.getStatus()) {
                 try {
-                    emitter.send(SseEmitter.event()
-                            .name("result")
-                            .data(Map.of("state", true,
-                                    "text","断言成功，" + assertResult.getDescription())));
+                    EmitterSendUtils.send(emitter, "result",
+                            true, "断言成功，" + assertResult.getDescription());
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                 }
             } else if (assertResult != null) {
                 try {
-                    emitter.send(SseEmitter.event()
-                            .name("result")
-                            .data(Map.of("state", false,
-                                    "text","断言失败，" + assertResult.getDescription())));
+                    EmitterSendUtils.send(emitter, "result",
+                            false, "断言失败，" + assertResult.getDescription());
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                 }
             }
         });
+
         return emitter;
 
     }

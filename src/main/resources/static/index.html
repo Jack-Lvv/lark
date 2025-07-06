@@ -211,7 +211,7 @@
             word-wrap: break-word;
             background-color: #f8f9fa;
             border: 1px solid #e9ecef;
-            max-height: 120px; /* 限制高度实现滚动效果 */
+            max-height: 180px; /* 限制高度实现滚动效果 */
             overflow-y: auto;
         }
 
@@ -222,13 +222,44 @@
         }
 
         #result-list li {
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            animation: slideIn 0.5s ease;
-            border-bottom: 1px solid #eee;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
         }
 
+        #result-list li:hover {
+            background-color: #f0f8ff;
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        /* 美化滚动条 */
+        #result::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #result::-webkit-scrollbar-track {
+            background: rgba(200, 200, 200, 0.2);
+            border-radius: 5px;
+        }
+
+        #result::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            border-radius: 5px;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+
+        #result::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2980b9, #27ae60);
+        }
+        #result-list li.slide-in {
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -353,13 +384,17 @@
             const text = document.createTextNode(data.text);
             li.appendChild(text);
 
+            // 添加动画类
+            li.classList.add('slide-in');
+
             // 添加到列表顶部
             resultList.insertBefore(li, resultList.firstChild);
 
-            // 限制只显示两条结果
-            if (resultList.children.length > 2) {
-                resultList.removeChild(resultList.lastChild);
-            }
+            // 动画结束后移除动画类
+            setTimeout(() => {
+                li.classList.remove('slide-in');
+            }, 500);
+
         });
 
         currentSSE.onerror = function (err) {

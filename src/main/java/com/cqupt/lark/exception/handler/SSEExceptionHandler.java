@@ -1,8 +1,8 @@
 package com.cqupt.lark.exception.handler;
 
 import com.cqupt.lark.exception.BusinessException;
+import com.cqupt.lark.util.EmitterSendUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -16,10 +16,7 @@ public class SSEExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public String handlerBusinessException(BusinessException e, SseEmitter emitter) throws IOException {
         log.error(e.getMessage());
-        emitter.send(SseEmitter.event()
-                .name("result") // 自定义事件类型
-                .data(e.getMessage()));
-        emitter.complete();
+        EmitterSendUtils.send(emitter, "result", false, e.getMessage());
         return e.getMessage();
     }
 
