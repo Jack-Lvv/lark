@@ -6,5 +6,5 @@ import java.io.IOException;
 
 public interface ValidateService {
 
-    TestResult validate(byte[] buffer, String aCase) throws IOException;
+    TestResult validate(byte[] oldScreenshot,byte[] newScreenshot, String aCase) throws IOException;
 }

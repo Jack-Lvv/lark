@@ -17,9 +17,9 @@ public class ValidateServiceImpl implements ValidateService {
 
     private final VisionAssistant visionAssistant;
     @Override
-    public TestResult validate(byte[] buffer, String aCase) throws IOException {
+    public TestResult validate(byte[] oldScreenshot, byte[] newScreenshot, String aCase) throws IOException {
 
-        String result = visionAssistant.chatWithValidate(aCase, buffer);
+        String result = visionAssistant.chatWithValidate(aCase,oldScreenshot, newScreenshot);
 
         String resultSubStr = SubStringUtils.subCasesUselessPart(result);
 

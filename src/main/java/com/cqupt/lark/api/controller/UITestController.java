@@ -106,8 +106,9 @@ public class UITestController {
                 TestResult testResult = new TestResult();
                 //if (executor.execute(testCase, page)) {
                 try {
+                    byte[] oldScreenshot = browserPageSupport.screenshot();
                     if (testExecutorService.executeWithVision(testCaseVisionCorrected, browserPageSupport)) {
-                        testResult = validateService.validate(browserPageSupport.screenshot(), cases[index]);
+                        testResult = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), cases[index]);
                     } else {
                         testResult.setStatus(false);
                         testResult.setDescription("准备进行重试...");
@@ -151,8 +152,9 @@ public class UITestController {
                         String standardCases = testCasesTrans.trans(cases[index], browserPageSupport);
                         String casesAfterCorrect = SubStringUtils.subCasesUselessPart(standardCases);
                         TestCase testCase = testCasesTrans.transToJson(casesAfterCorrect);
+                        byte[] oldScreenshot = browserPageSupport.screenshot();
                         Boolean resultBoolean = testExecutorService.execute(testCase, browserPageSupport);
-                        TestResult testResultByOCR = validateService.validate(browserPageSupport.screenshot(), cases[index]);
+                        TestResult testResultByOCR = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), cases[index]);
                         if (!resultBoolean) {
                             throw new Exception("源码定位失败");
                         } else if (!testResultByOCR.getStatus()) {

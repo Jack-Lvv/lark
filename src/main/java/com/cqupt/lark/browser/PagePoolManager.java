@@ -39,7 +39,7 @@ public class PagePoolManager {
     public PagePoolManager() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-                .setHeadless(false).setSlowMo(1000));
+                .setHeadless(true).setSlowMo(1000));
         startCleanupThread();
     }
 

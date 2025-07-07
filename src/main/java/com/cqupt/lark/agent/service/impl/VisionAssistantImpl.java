@@ -57,7 +57,7 @@ public class VisionAssistantImpl implements VisionAssistant {
     }
 
     @Override
-    public String chatWithValidate(String inputMessage, byte[] imageData) throws IOException {
+    public String chatWithValidate(String inputMessage, byte[] oldImageData, byte[] newImageData) throws IOException {
 
         String prompt;
 
@@ -69,9 +69,12 @@ public class VisionAssistantImpl implements VisionAssistant {
             }
             prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
-        String base64Data = Base64.getEncoder().encodeToString(imageData);
-        ImageContent imageContent = ImageContent.from(base64Data, "image/jpeg");
-        return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(imageContent)).aiMessage().text();
+        String oldBase64Data = Base64.getEncoder().encodeToString(oldImageData);
+        ImageContent oldImageContent = ImageContent.from(oldBase64Data, "image/jpeg");
+
+        String newBase64Data = Base64.getEncoder().encodeToString(newImageData);
+        ImageContent newImageContent = ImageContent.from(newBase64Data, "image/jpeg");
+        return model.chat(SystemMessage.from(prompt), UserMessage.from(inputMessage), UserMessage.from(oldImageContent), UserMessage.from(newImageContent)).aiMessage().text();
     }
 
     @Override
