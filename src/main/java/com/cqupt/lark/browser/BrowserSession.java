@@ -16,8 +16,8 @@ public class BrowserSession {
     private final BrowserPageSupport browserPageSupport;
 
     @Autowired
-    public BrowserSession(PagePoolManager pagePoolManager) {
-        this.browserPageSupport = new BrowserPageSupport(pagePoolManager);
+    public BrowserSession(PlaywrightPoolManager playwrightPoolManager) {
+        this.browserPageSupport = new BrowserPageSupport(playwrightPoolManager);
     }
 
     @PreDestroy

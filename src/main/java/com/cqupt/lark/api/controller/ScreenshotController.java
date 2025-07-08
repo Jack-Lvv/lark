@@ -33,15 +33,14 @@ public class ScreenshotController {
     @GetMapping(value = "/screenshots", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamScreenshots() {
 
-        SseEmitter emitter = new SseEmitter(60000L);
+        SseEmitter emitter = new SseEmitter(0L);
 
         BrowserPageSupport browserPageSupport = browserSession.getBrowserPageSupport();
 
-        AtomicBoolean isRunning = new AtomicBoolean(true);
-
         executor.execute(() -> {
+            log.info("SSE截图流连接建立");
 
-            while (isRunning.get()) {
+            while (true) {
                 long startTime = System.currentTimeMillis();
 
                 // 截取页面截图
@@ -79,16 +78,13 @@ public class ScreenshotController {
 
         // 连接生命周期回调
         emitter.onCompletion(() -> {
-            log.info("SSE连接完成");
-            isRunning.set(false);
+            log.info("SSE截图连接断开");
         });
         emitter.onTimeout(() -> {
-            log.info("SSE连接超时");
-            isRunning.set(false);
+            log.info("SSE截图连接超时");
         });
         emitter.onError(e -> {
-            log.error("SSE连接错误", e);
-            isRunning.set(false);
+            log.error("SSE截图连接错误", e);
         });
         return emitter;
     }

@@ -61,6 +61,7 @@ public class ExecutorImpl implements TestExecutorService {
                 "  div.style.zIndex = '9999';\n" +
                 "  div.style.pointerEvents = 'none';\n" +
                 "  document.body.appendChild(div);\n" +
+                "  window._highlightDiv = div;\n" +  // 保存引用
                 "}", Arrays.asList(x1, y1, width, height));
 
 

@@ -5,8 +5,8 @@ import com.cqupt.lark.util.CompressImageUtils;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.ScreenshotType;
-import jakarta.annotation.PreDestroy;
 
 import java.util.List;
 
@@ -16,16 +16,21 @@ public class BrowserPageSupport {
 
     private final PriorityLock lock;
 
-    private final PagePoolManager pagePoolManager;
+    private final PlaywrightPoolManager playwrightPoolManager;
 
-    public BrowserPageSupport(PagePoolManager pagePoolManager) {
-        this.pageInstance = pagePoolManager.getPage();
-        lock = new PriorityLock();
-        this.pagePoolManager = pagePoolManager;
+    public BrowserPageSupport(PlaywrightPoolManager playwrightPoolManager) {
+        this.pageInstance = playwrightPoolManager.getPage();
+        this.lock = playwrightPoolManager.getLock(pageInstance);
+        this.playwrightPoolManager = playwrightPoolManager;
     }
 
     public void close() {
-        pagePoolManager.releasePage(pageInstance);
+        pageInstance.navigate("about:blank");
+        playwrightPoolManager.releasePage(pageInstance);
+    }
+
+    public void waitForLoad() {
+        pageInstance.waitForLoadState(LoadState.LOAD, new Page.WaitForLoadStateOptions().setTimeout(2000L));
     }
 
     public void navigate(String url) throws InterruptedException {
@@ -93,6 +98,7 @@ public class BrowserPageSupport {
             lock.unlock();
         }
     }
+    
 
     public String getContent() throws InterruptedException {
         lock.lockHighPriority();
@@ -174,5 +180,6 @@ public class BrowserPageSupport {
             lock.unlock();
         }
     }
+
 
 }

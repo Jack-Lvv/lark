@@ -54,12 +54,13 @@ public class UITestController {
 
         BrowserPageSupport browserPageSupport = browserSession.getBrowserPageSupport();
 
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(0L);
 
         executor.execute(() -> {
 
             try {
                 browserPageSupport.navigate(UrlStringAdder.urlStrAdd(request.getUrl()));
+                browserPageSupport.waitForLoad();
             } catch (InterruptedException e) {
                 throw new BusinessException(ExceptionEnum.NAVIGATE_ERROR);
             }
@@ -108,6 +109,7 @@ public class UITestController {
                 try {
                     byte[] oldScreenshot = browserPageSupport.screenshot();
                     if (testExecutorService.executeWithVision(testCaseVisionCorrected, browserPageSupport)) {
+                        browserPageSupport.waitForLoad();
                         testResult = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), cases[index]);
                     } else {
                         testResult.setStatus(false);
@@ -154,6 +156,7 @@ public class UITestController {
                         TestCase testCase = testCasesTrans.transToJson(casesAfterCorrect);
                         byte[] oldScreenshot = browserPageSupport.screenshot();
                         Boolean resultBoolean = testExecutorService.execute(testCase, browserPageSupport);
+                        browserPageSupport.waitForLoad();
                         TestResult testResultByOCR = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), cases[index]);
                         if (!resultBoolean) {
                             throw new Exception("源码定位失败");
@@ -205,6 +208,16 @@ public class UITestController {
                     throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                 }
             }
+        });
+        // 连接生命周期回调
+        emitter.onCompletion(() -> {
+            log.info("SSE命令连接断开");
+        });
+        emitter.onTimeout(() -> {
+            log.info("SSE命令连接超时");
+        });
+        emitter.onError(e -> {
+            log.error("SSE命令连接错误", e);
         });
 
         return emitter;
