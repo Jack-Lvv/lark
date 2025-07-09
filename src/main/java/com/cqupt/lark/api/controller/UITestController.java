@@ -19,7 +19,6 @@ import com.cqupt.lark.util.UrlStringAdder;
 import com.cqupt.lark.validate.service.ValidateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -28,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -42,11 +41,11 @@ public class UITestController {
     private final AssertService assertService;
     private final BrowserSession browserSession;
 
-    @Value("${app.config.max-retry-times}")
+    @Value("${app.config.vision-max-retry-times}")
     private int maxFailureTimes;
 
     private final ExecutorService executor;
-    @GetMapping(value = "/api/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/api/test/v2", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter test(RequestDTO request) {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());

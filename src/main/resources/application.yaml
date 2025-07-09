@@ -9,8 +9,10 @@ app:
     api-version: v1
     # 跨域，开发阶段可以设置为 * 不限制
     cross-origin: '*'
-    # 模型最大重试次数
-    max-retry-times: 3
+    # 视觉模型最大重试次数
+    vision-max-retry-times: 3
+    # 代码模型最大重试次数
+    code-max-retry-times: 0
     # SSE推送帧率
     sse-fps: 24
 
@@ -22,20 +24,21 @@ open-ai:
     base-url: 'https://ark.cn-beijing.volces.com/api/v3'
     api-key: 'ec4c495e-e640-476a-b35b-228af0c5b457'
     model-name: 'doubao-seed-1-6-250615'
-    log-requests: true
-    log-responses: true
   doubao-vision:
     base-url: 'https://ark.cn-beijing.volces.com/api/v3'
     api-key: 'b32ee919-f8ae-4f0a-938c-5f6de3a5fa42'
     model-name: 'doubao-1-5-vision-pro-250328'
-    log-requests: true
-    log-responses: true
+  doubao-embedding:
+    base-url: 'https://ark.cn-beijing.volces.com/api/v3'
+    api-key: 'b32ee919-f8ae-4f0a-938c-5f6de3a5fa42'
+    model-name: 'doubao-embedding-large-text-250515'
 #  doubao-vision:
 #    base-url: 'http://localhost:11434'
 #    api-key: ''
 #    model-name: 'qwen2.5vl:7b-q8_0'
 #    log-requests: true
 #    log-responses: true
+
 
 offset:
   xOffset: 0

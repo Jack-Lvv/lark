@@ -15,6 +15,7 @@ public enum ExceptionEnum {
     SCREENSHOT_ERROR("页面图片获取失败，请联系管理员修复"),
     CODE_LOCATION_ERROR("前端原代码定位失败"),
     ASSERT_ERROR("页面断言失败"),
+    JSON_TRANS_ERROR("JSON转换失败"),
 
     ;
 
