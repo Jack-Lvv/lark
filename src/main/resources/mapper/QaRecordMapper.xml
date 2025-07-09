@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cqupt.lark.rag.mapper.QaRecordMapper">
+    <insert id="insert">
+        insert into qa_record(url, question, answer, is_correct, vector_id)
+        values (#{url}, #{question}, #{answer}, #{isCorrect}, #{vectorId})
+    </insert>
+    <select id="getByVectorId" resultType="com.cqupt.lark.rag.model.QaRecord">
+        select url, question, answer, is_correct, vector_id from qa_record where vector_id = #{vectorId}
+    </select>
+</mapper>

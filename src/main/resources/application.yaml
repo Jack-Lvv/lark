@@ -1,6 +1,20 @@
 spring:
   application:
     name: lark
+  datasource:
+    url: jdbc:mysql://localhost:3306/lark
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+milvus:
+  uri: http://localhost:19530
+  token: root:Milvus
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
 
 # 应用配置
 app:
@@ -13,8 +27,12 @@ app:
     vision-max-retry-times: 3
     # 代码模型最大重试次数
     code-max-retry-times: 0
+    # 向量检索topK
+    vector-topK: 3
     # SSE推送帧率
     sse-fps: 24
+    # 向量模型维数
+    vector-dimension: 64
 
 server:
   port: 80
@@ -29,9 +47,9 @@ open-ai:
     api-key: 'b32ee919-f8ae-4f0a-938c-5f6de3a5fa42'
     model-name: 'doubao-1-5-vision-pro-250328'
   doubao-embedding:
-    base-url: 'https://ark.cn-beijing.volces.com/api/v3'
-    api-key: 'b32ee919-f8ae-4f0a-938c-5f6de3a5fa42'
-    model-name: 'doubao-embedding-large-text-250515'
+    base-url: 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+    api-key: 'sk-69e6710628df43daab681c347712d328'
+    model-name: 'text-embedding-v4'
 #  doubao-vision:
 #    base-url: 'http://localhost:11434'
 #    api-key: ''

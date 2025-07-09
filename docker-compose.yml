@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  milvus:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:latest
+    ports:
+      - "19530:19530"  # Milvus 服务端口
+      - "9091:9091"    # 监控端口
+    volumes:
+      - ./data:/var/lib/milvus  # 持久化数据
+    environment:
+      - "ETCD_ENABLED=true"
+      - "MINIO_ENABLED=true"

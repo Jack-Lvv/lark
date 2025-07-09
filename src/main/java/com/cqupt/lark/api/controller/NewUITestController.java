@@ -13,7 +13,6 @@ import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.util.UrlStringAdder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
