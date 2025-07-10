@@ -45,7 +45,7 @@ public class UITestController {
     private int maxFailureTimes;
 
     private final ExecutorService executor;
-    @GetMapping(value = "/api/test/v2", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/api/test/old", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter test(RequestDTO request) {
         log.info("测试网址: {}", request.getUrl());
         log.info("测试用例描述: {}", request.getDescription());
@@ -104,7 +104,6 @@ public class UITestController {
                 TestCaseVision testCaseVisionCorrected = OffsetCorrectUtils.correct(testCaseVision);
 
                 TestResult testResult = new TestResult();
-                //if (executor.execute(testCase, page)) {
                 try {
                     byte[] oldScreenshot = browserPageSupport.screenshot();
                     if (testExecutorService.executeWithVision(testCaseVisionCorrected, browserPageSupport)) {

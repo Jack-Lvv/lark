@@ -9,6 +9,7 @@ import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.service.TestCasesTrans;
 import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.validate.service.ValidateService;
+import com.cqupt.lark.vector.service.SearchVectorService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,9 @@ public class CodeAutoTestService extends AbstractAutoTestService {
     private final TestExecutorService testExecutorService;
 
     public CodeAutoTestService(@Value("${app.config.code-max-retry-times}") Integer maxFailureTimes,
-                               ValidateService validateService, TestCasesTrans testCasesTrans, TestExecutorService testExecutorService) {
-        super(validateService, maxFailureTimes);
+                               ValidateService validateService, TestCasesTrans testCasesTrans,
+                               TestExecutorService testExecutorService, SearchVectorService searchVectorService) {
+        super(validateService, maxFailureTimes, searchVectorService);
         this.testCasesTrans = testCasesTrans;
         this.testExecutorService = testExecutorService;
     }

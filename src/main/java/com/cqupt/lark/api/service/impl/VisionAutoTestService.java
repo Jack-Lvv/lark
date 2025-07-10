@@ -10,6 +10,7 @@ import com.cqupt.lark.translation.service.TestCasesTrans;
 import com.cqupt.lark.util.OffsetCorrectUtils;
 import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.validate.service.ValidateService;
+import com.cqupt.lark.vector.service.SearchVectorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,9 @@ public class VisionAutoTestService extends AbstractAutoTestService {
 
     public VisionAutoTestService(
             @Value("${app.config.vision-max-retry-times}") Integer maxFailureTimes,
-            ValidateService validateService, TestCasesTrans testCasesTrans, TestExecutorService testExecutorService) {
-        super(validateService, maxFailureTimes);
+            ValidateService validateService, TestCasesTrans testCasesTrans,
+            TestExecutorService testExecutorService, SearchVectorService searchVectorService) {
+        super(validateService, maxFailureTimes, searchVectorService);
         this.testCasesTrans = testCasesTrans;
         this.testExecutorService = testExecutorService;
     }

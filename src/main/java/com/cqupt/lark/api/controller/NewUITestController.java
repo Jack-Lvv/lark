@@ -8,9 +8,12 @@ import com.cqupt.lark.browser.BrowserPageSupport;
 import com.cqupt.lark.browser.BrowserSession;
 import com.cqupt.lark.exception.BusinessException;
 import com.cqupt.lark.exception.enums.ExceptionEnum;
+import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.util.EmitterSendUtils;
 import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.util.UrlStringAdder;
+import com.cqupt.lark.vector.model.dto.AnswerDTO;
+import com.cqupt.lark.vector.service.SearchVectorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -29,10 +32,11 @@ import java.util.concurrent.ExecutorService;
 public class NewUITestController {
 
     private final BrowserSession browserSession;
-
     private final VisionAutoTestService visionAutoTestService;
     private final CodeAutoTestService codeAutoTestService;
     private final AssertTestResultService assertTestResultService;
+    private final SearchVectorService searchVectorService;
+    private final TestExecutorService testExecutorService;
 
     private final ExecutorService executor;
     @GetMapping(value = "/api/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -59,8 +63,19 @@ public class NewUITestController {
 
             boolean isSuccess = false;
             for (String aCase : cases) {
+                AnswerDTO answer = searchVectorService.searchAnswer(request.getUrl(), aCase);
+                if (answer != null) {
+                    log.info("请求命中数据库");
+                    try {
+                        if (testExecutorService.executeWithAnswer(answer, browserPageSupport, aCase, emitter)) {
+                            continue;
+                        }
+                    } catch (InterruptedException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 try {
-                    isSuccess = visionAutoTestService.autoTest(browserPageSupport, emitter, aCase);
+                    isSuccess = visionAutoTestService.autoTest(request.getUrl(), browserPageSupport, emitter, aCase);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -75,7 +90,7 @@ public class NewUITestController {
                         throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
                     }
                     try {
-                        isSuccess = codeAutoTestService.autoTest(browserPageSupport, emitter, aCase);
+                        isSuccess = codeAutoTestService.autoTest(request.getUrl(), browserPageSupport, emitter, aCase);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

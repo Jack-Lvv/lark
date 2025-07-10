@@ -8,5 +8,5 @@ import java.io.IOException;
 
 public interface AutoTestService {
 
-    boolean autoTest(BrowserPageSupport browserPageSupport, SseEmitter emitter, String aCase) throws IOException;
+    boolean autoTest(String url, BrowserPageSupport browserPageSupport, SseEmitter emitter, String aCase) throws IOException;
 }

@@ -1,15 +1,24 @@
 package com.cqupt.lark.execute.service.impl;
 
 import com.cqupt.lark.browser.BrowserPageSupport;
+import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.location.service.LocatorService;
 import com.cqupt.lark.translation.model.entity.TestCase;
 import com.cqupt.lark.translation.model.entity.TestCaseVision;
+import com.cqupt.lark.util.EmitterSendUtils;
+import com.cqupt.lark.util.OffsetCorrectUtils;
+import com.cqupt.lark.validate.service.ValidateService;
+import com.cqupt.lark.vector.model.dto.AnswerDTO;
+import com.cqupt.lark.vector.service.SearchVectorService;
 import com.microsoft.playwright.Locator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.cqupt.lark.translation.service.TestCasesTrans;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 @Service
@@ -18,6 +27,9 @@ import java.util.Arrays;
 public class ExecutorImpl implements TestExecutorService {
 
     private final LocatorService locatorService;
+    private final TestCasesTrans testCasesTrans;
+    private final ValidateService validateService;
+    private final SearchVectorService searchVectorService;
 
     @Override
     public Boolean execute(TestCase testCase, BrowserPageSupport browserPageSupport) throws InterruptedException {
@@ -80,5 +92,26 @@ public class ExecutorImpl implements TestExecutorService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean executeWithAnswer(AnswerDTO answer, BrowserPageSupport browserPageSupport, String aCase,
+                                     SseEmitter emitter) throws InterruptedException, IOException {
+        TestCaseVision testCaseVision = testCasesTrans.transToJsonWithVision(answer.getAnswer());
+        TestCaseVision testCaseVisionCorrected = OffsetCorrectUtils.correct(testCaseVision);
+        byte[] oldScreenshot = browserPageSupport.screenshot();
+        TestResult testResult = new TestResult();
+        if (executeWithVision(testCaseVisionCorrected, browserPageSupport)) {
+            browserPageSupport.waitForLoad();
+            testResult = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), aCase);
+        }
+        if (!testResult.getStatus()) {
+            searchVectorService.wrongQaRecord(answer.getVectorId());
+            return false;
+        } else {
+            EmitterSendUtils.send(emitter, "result", true,
+                    "操作执行成功，" + testResult.getDescription());
+            return true;
+        }
     }
 }

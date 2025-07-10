@@ -1,4 +1,4 @@
-package com.cqupt.lark.rag.model;
+package com.cqupt.lark.vector.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

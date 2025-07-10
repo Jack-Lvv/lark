@@ -1,7 +1,7 @@
-package com.cqupt.lark.rag;
+package com.cqupt.lark.vector;
 
-import com.cqupt.lark.rag.model.QaRecord;
-import com.cqupt.lark.rag.service.RagService;
+import com.cqupt.lark.vector.model.entity.QaRecord;
+import com.cqupt.lark.vector.service.VectorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,11 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class RagTest {
 
     @Autowired
-    private RagService ragService;
+    private VectorService vectorService;
     @Test
     public void add() {
-        ragService.initMilvusCollection();
-        ragService.saveQaRecord(QaRecord.builder()
+        vectorService.initMilvusCollection();
+        vectorService.saveQaRecord(QaRecord.builder()
                         .url("baidu.com")
                         .question("如何使用Milvus")
                         .answer("使用Milvus")
@@ -24,7 +24,7 @@ public class RagTest {
 
     @Test
     public void query() {
-        System.out.println(ragService.searchSimilarTexts(QaRecord.builder()
+        System.out.println(vectorService.searchSimilarTexts(QaRecord.builder()
                 .url("baidu.com")
                 .question("如何使用Milvus")
                 .answer("使用Milvus")
@@ -33,6 +33,6 @@ public class RagTest {
     }
     @Test
     public void deleteCollection() {
-        ragService.deleteCollection();
+        vectorService.deleteCollection();
     }
 }

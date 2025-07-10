@@ -1,8 +1,8 @@
-package com.cqupt.lark.rag.service.impl;
+package com.cqupt.lark.vector.service.impl;
 
-import com.cqupt.lark.rag.model.QaRecord;
-import com.cqupt.lark.rag.repository.RAGRepository;
-import com.cqupt.lark.rag.service.RagService;
+import com.cqupt.lark.vector.model.entity.QaRecord;
+import com.cqupt.lark.vector.repository.VectorRepository;
+import com.cqupt.lark.vector.service.VectorService;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -28,23 +28,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class RagServiceImpl implements RagService {
+public class VectorServiceImpl implements VectorService {
 
     private final MilvusClientV2 milvusClient;
     private final EmbeddingModel embeddingModel;
-    private final RAGRepository ragRepository;
+    private final VectorRepository vectorRepository;
     private final Integer topK;
     private final Integer dimension;
 
-    public RagServiceImpl(MilvusClientV2 milvusClient,
-                          @Value("${open-ai.doubao-embedding.base-url}") String baseUrl,
-                          @Value("${open-ai.doubao-embedding.api-key}") String apiKey,
-                          @Value("${open-ai.doubao-embedding.model-name}") String modelName,
-                          RAGRepository ragRepository,
-                          @Value("${app.config.vector-topK}") Integer topK,
-    @Value("${app.config.vector-dimension}") Integer dimension) {
+    public VectorServiceImpl(MilvusClientV2 milvusClient,
+                             @Value("${open-ai.doubao-embedding.base-url}") String baseUrl,
+                             @Value("${open-ai.doubao-embedding.api-key}") String apiKey,
+                             @Value("${open-ai.doubao-embedding.model-name}") String modelName,
+                             VectorRepository vectorRepository,
+                             @Value("${app.config.vector-topK}") Integer topK,
+                             @Value("${app.config.vector-dimension}") Integer dimension) {
         this.milvusClient = milvusClient;
-        this.ragRepository = ragRepository;
+        this.vectorRepository = vectorRepository;
         this.topK = topK;
         this.dimension = dimension;
         this.embeddingModel = OpenAiEmbeddingModel.builder()
@@ -53,6 +53,7 @@ public class RagServiceImpl implements RagService {
                 .modelName(modelName)
                 .dimensions(dimension)
                 .build();
+        initMilvusCollection();
     }
 
     @Override
@@ -123,11 +124,11 @@ public class RagServiceImpl implements RagService {
 
         // 3. 存储元数据到MySQL
         record.setVectorId(vectorId);
-        ragRepository.save(record);
+        vectorRepository.save(record);
     }
 
     @Override
-    public List<String> searchSimilarTexts(QaRecord query) {
+    public List<QaRecord> searchSimilarTexts(QaRecord query) {
         // 1. 生成查询向量
         float[] queryVector = embeddingModel.embed(query.toStringForVector()).content().vector();
 
@@ -149,9 +150,7 @@ public class RagServiceImpl implements RagService {
         }
 
         // 3. 从MySQL获取元数据
-        return ragRepository.findByVectorIdIn(ids)
-                .stream().map(QaRecord::getAnswer)
-                .collect(Collectors.toList());
+        return vectorRepository.findByVectorIdIn(ids);
     }
 
     @Override

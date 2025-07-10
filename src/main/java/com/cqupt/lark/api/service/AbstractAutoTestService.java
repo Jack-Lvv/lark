@@ -6,7 +6,9 @@ import com.cqupt.lark.exception.BusinessException;
 import com.cqupt.lark.exception.enums.ExceptionEnum;
 import com.cqupt.lark.execute.model.entity.TestResult;
 import com.cqupt.lark.util.EmitterSendUtils;
+import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.validate.service.ValidateService;
+import com.cqupt.lark.vector.service.SearchVectorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -19,9 +21,10 @@ public abstract class AbstractAutoTestService implements AutoTestService {
 
     private final ValidateService validateService;
     private final Integer maxFailureTimes;
+    private final SearchVectorService searchVectorService;
 
     @Override
-    public boolean autoTest(BrowserPageSupport browserPageSupport, SseEmitter emitter, String aCase) throws IOException {
+    public boolean autoTest(String url, BrowserPageSupport browserPageSupport, SseEmitter emitter, String aCase) throws IOException {
 
         int failureTimes = 0;
 
@@ -68,6 +71,8 @@ public abstract class AbstractAutoTestService implements AutoTestService {
                 try {
                     EmitterSendUtils.send(emitter, "result", true,
                             "操作执行成功，" + testResult.getDescription());
+                    String standardCases = SubStringUtils.subCasesUselessPart(standardStr);
+                    searchVectorService.addQaRecord(url, aCase, standardCases, true);
                     return true;
                 } catch (IOException e) {
                     throw new BusinessException(ExceptionEnum.SSE_SEND_ERROR);
