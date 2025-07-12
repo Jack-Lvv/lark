@@ -41,7 +41,7 @@ open-ai:
   doubao:
     base-url: 'https://ark.cn-beijing.volces.com/api/v3'
     api-key: 'ec4c495e-e640-476a-b35b-228af0c5b457'
-    model-name: 'doubao-seed-1-6-250615'
+    model-name: 'doubao-seed-1-6-flash-250615'
   doubao-vision:
     base-url: 'https://ark.cn-beijing.volces.com/api/v3'
     api-key: 'b32ee919-f8ae-4f0a-938c-5f6de3a5fa42'
@@ -61,5 +61,5 @@ open-ai:
 offset:
   xOffset: 0
   yOffset: 0
-  xRate: 1.27
-  yRate: 0.7
+  xRate: 1.25
+  yRate: 0.703125

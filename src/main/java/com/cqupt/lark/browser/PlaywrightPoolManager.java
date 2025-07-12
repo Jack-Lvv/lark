@@ -95,20 +95,14 @@ public class PlaywrightPoolManager {
     }
 
     public void releasePage(Page page) {
-        poolLock.lock();
         PlaywrightWrapper wrapper = pagePlaywrightMap.remove(page);
         if (wrapper == null) {
-            poolLock.unlock();
             return;
         }
-        try {
-            unUsedPages.offer(page);
-            playwrightQueue.remove(wrapper);
-            wrapper.size.decrementAndGet();
-            playwrightQueue.add(wrapper);
-        } finally {
-            poolLock.unlock();
-        }
+        unUsedPages.offer(page);
+        playwrightQueue.remove(wrapper);
+        wrapper.size.decrementAndGet();
+        playwrightQueue.add(wrapper);
 
     }
 

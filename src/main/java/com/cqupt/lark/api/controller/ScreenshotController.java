@@ -14,8 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutorService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -78,12 +77,15 @@ public class ScreenshotController {
 
         // 连接生命周期回调
         emitter.onCompletion(() -> {
+            browserPageSupport.close();
             log.info("SSE截图连接断开");
         });
         emitter.onTimeout(() -> {
+            browserPageSupport.close();
             log.info("SSE截图连接超时");
         });
         emitter.onError(e -> {
+            browserPageSupport.close();
             log.error("SSE截图连接错误", e);
         });
         return emitter;

@@ -23,7 +23,7 @@ public class SearchVectorServiceImpl implements SearchVectorService {
                 .question(question)
                 .build());
         for (QaRecord qaRecord : qaRecords) {
-            if (qaRecord.isCorrect()) {
+            if (qaRecord != null && qaRecord.isCorrect()) {
                 return AnswerDTO.builder()
                         .vectorId(qaRecord.getVectorId())
                         .answer(qaRecord.getAnswer())

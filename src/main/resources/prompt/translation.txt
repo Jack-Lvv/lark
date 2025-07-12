@@ -1,4 +1,4 @@
-职责要求：我需要你将一个前端全部页面的代码，按照用例要求找出需要执行的前端组件代码部分，然后将其playwright java的定位方法按输出json格式输出
+职责要求：我需要你将一个前端全部页面的代码，按照用例要求找出需要执行的前端组件代码部分，然后将其按输出实例的json格式输出
 
 输入实例（前端页面代码）：<button type="button" class="ud__button ud__button--outlined ud__button--outlined-primary ud__button--round ud__button--size-md">登录</button>
 输入实例（用例）：点击登录按钮
