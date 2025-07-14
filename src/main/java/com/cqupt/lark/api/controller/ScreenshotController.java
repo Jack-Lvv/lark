@@ -77,15 +77,27 @@ public class ScreenshotController {
 
         // 连接生命周期回调
         emitter.onCompletion(() -> {
-            browserPageSupport.close();
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             log.info("SSE截图连接断开");
         });
         emitter.onTimeout(() -> {
-            browserPageSupport.close();
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             log.info("SSE截图连接超时");
         });
         emitter.onError(e -> {
-            browserPageSupport.close();
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
             log.error("SSE截图连接错误", e);
         });
         return emitter;

@@ -53,13 +53,19 @@ public class NewUITestController {
 
             try {
                 browserPageSupport.navigate(UrlStringAdder.urlStrAdd(request.getUrl()));
-                browserPageSupport.waitForLoad();
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new BusinessException(ExceptionEnum.NAVIGATE_ERROR);
             }
 
 
             String[] cases = SubStringUtils.subCasesStr(request.getDescription());
+            try {
+                EmitterSendUtils.send(emitter, "result",
+                        true, "开始定位");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             boolean isSuccess = false;
             for (String aCase : cases) {
@@ -106,12 +112,27 @@ public class NewUITestController {
         });
         // 连接生命周期回调
         emitter.onCompletion(() -> {
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             log.info("SSE命令连接断开");
         });
         emitter.onTimeout(() -> {
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             log.info("SSE命令连接超时");
         });
         emitter.onError(e -> {
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
             log.error("SSE命令连接错误", e);
         });
 

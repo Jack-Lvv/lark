@@ -18,19 +18,29 @@ public class BrowserPageSupport {
 
     private final PlaywrightPoolManager playwrightPoolManager;
 
-    public BrowserPageSupport(PlaywrightPoolManager playwrightPoolManager) {
+    public BrowserPageSupport(PlaywrightPoolManager playwrightPoolManager) throws InterruptedException {
         this.pageInstance = playwrightPoolManager.getPage();
         this.lock = playwrightPoolManager.getLock(pageInstance);
         this.playwrightPoolManager = playwrightPoolManager;
     }
 
-    public void close() {
-        pageInstance.navigate("about:blank");
+    public void close() throws InterruptedException {
+        lock.lockHighPriority();
+        try {
+            pageInstance.navigate("about:blank");
+        } finally {
+            lock.unlock();
+        }
         playwrightPoolManager.releasePage(pageInstance);
     }
 
-    public void waitForLoad() {
-        pageInstance.waitForLoadState(LoadState.LOAD, new Page.WaitForLoadStateOptions().setTimeout(2000L));
+    public void waitForLoad() throws InterruptedException {
+        lock.lockHighPriority();
+        try {
+            pageInstance.waitForLoadState(LoadState.LOAD, new Page.WaitForLoadStateOptions().setTimeout(2000L));
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void navigate(String url) throws InterruptedException {

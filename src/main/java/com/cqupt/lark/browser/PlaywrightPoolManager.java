@@ -34,6 +34,7 @@ public class PlaywrightPoolManager {
         PlaywrightWrapper(Playwright pwt) {
             this.pwt = pwt;
         }
+
         PlaywrightWrapper(Playwright pwt, int size) {
             this.pwt = pwt;
             this.size.set(size);
@@ -42,8 +43,6 @@ public class PlaywrightPoolManager {
 
     private static final ConcurrentSkipListSet<PlaywrightWrapper> playwrightQueue =
             new ConcurrentSkipListSet<>(Comparator.comparingInt(o -> o.size.get()));
-
-    private final ReentrantLock poolLock = new ReentrantLock();
 
     private static final ConcurrentLinkedQueue<Page> unUsedPages = new ConcurrentLinkedQueue<>();
 
@@ -66,36 +65,45 @@ public class PlaywrightPoolManager {
         return pagePlaywrightMap.get(page).lock;
     }
 
-    public Page getPage() {
-        poolLock.lock();
+    public Page getPage() throws InterruptedException {
         Page page = unUsedPages.poll();
         if (page != null) {
             return page;
         }
-        try {
-            PlaywrightWrapper wrapper;
-            if (playwrightQueue.isEmpty() || playwrightQueue.first().size.get() >= 10) {
-                Playwright pwt = Playwright.create();
-                wrapper = new PlaywrightWrapper(pwt);
+
+        PlaywrightWrapper wrapper;
+        if (playwrightQueue.isEmpty() || playwrightQueue.first().size.get() >= 10) {
+            wrapper = new PlaywrightWrapper(Playwright.create());
+        } else {
+            // 处理 floor() 返回 null 的情况
+            wrapper = playwrightQueue.floor(new PlaywrightWrapper(null, 9));
+            if (wrapper == null) {
+                wrapper = new PlaywrightWrapper(Playwright.create());
             } else {
-                wrapper = playwrightQueue.floor(new PlaywrightWrapper( null, 9));
+                // 正确更新集合：先移除再修改
+                playwrightQueue.remove(wrapper);
             }
+        }
+        Page newPage;
+        wrapper.lock.lockHighPriority();
+        try {
             Browser browser = wrapper.pwt.chromium().launch();
             BrowserContext ctx = browser.newContext(new Browser.NewContextOptions()
                     .setStorageStatePath(resourcesPath));
-            Page newPage = ctx.newPage();
-            wrapper.size.incrementAndGet();
-            playwrightQueue.add(wrapper);
-            pagePlaywrightMap.put(newPage, wrapper);
-            return newPage;
+            newPage = ctx.newPage();
         } finally {
-            poolLock.unlock();
+            wrapper.lock.unlock();
         }
+        wrapper.size.incrementAndGet();
+        playwrightQueue.add(wrapper);
+        pagePlaywrightMap.put(newPage, wrapper);
+        return newPage;
+
 
     }
 
     public void releasePage(Page page) {
-        PlaywrightWrapper wrapper = pagePlaywrightMap.remove(page);
+        PlaywrightWrapper wrapper = pagePlaywrightMap.get(page);
         if (wrapper == null) {
             return;
         }
@@ -121,24 +129,26 @@ public class PlaywrightPoolManager {
         }
     }
 
-    private void cleanupPages() {
-        poolLock.lock();
-        try {
-            Iterator<PlaywrightWrapper> iterator = playwrightQueue.iterator();
-            while (iterator.hasNext()) {
-                PlaywrightWrapper wrapper = iterator.next();
-                if (wrapper.size.get() == 0) {
-                    unUsedPages.removeIf(page -> {
-                        PlaywrightWrapper pw = pagePlaywrightMap.get(page);
-                        return pw == wrapper;
-                    });
+    private void cleanupPages() throws InterruptedException {
+
+        Iterator<PlaywrightWrapper> iterator = playwrightQueue.iterator();
+        while (iterator.hasNext()) {
+            PlaywrightWrapper wrapper = iterator.next();
+            if (wrapper.size.get() == 0) {
+                unUsedPages.removeIf(page -> {
+                    PlaywrightWrapper pw = pagePlaywrightMap.get(page);
+                    return pw == wrapper;
+                });
+                wrapper.lock.lockHighPriority();
+                try {
                     wrapper.pwt.close();
-                    iterator.remove();
+                } finally {
+                    wrapper.lock.unlock();
                 }
+                iterator.remove();
             }
-        } finally {
-            poolLock.unlock();
         }
+
     }
 
 }

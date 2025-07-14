@@ -102,7 +102,7 @@ public class ExecutorImpl implements TestExecutorService {
         byte[] oldScreenshot = browserPageSupport.screenshot();
         TestResult testResult = new TestResult();
         if (executeWithVision(testCaseVisionCorrected, browserPageSupport)) {
-            browserPageSupport.waitForLoad();
+            Thread.sleep(1000);
             testResult = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), aCase);
         }
         if (!testResult.getStatus()) {

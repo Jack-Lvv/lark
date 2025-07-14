@@ -16,13 +16,9 @@ public class BrowserSession {
     private final BrowserPageSupport browserPageSupport;
 
     @Autowired
-    public BrowserSession(PlaywrightPoolManager playwrightPoolManager) {
+    public BrowserSession(PlaywrightPoolManager playwrightPoolManager) throws InterruptedException {
         this.browserPageSupport = new BrowserPageSupport(playwrightPoolManager);
     }
 
-    @PreDestroy
-    public void close() {
-        browserPageSupport.close();
-    }
 
 }
