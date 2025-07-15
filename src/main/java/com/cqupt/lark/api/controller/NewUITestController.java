@@ -10,6 +10,7 @@ import com.cqupt.lark.exception.BusinessException;
 import com.cqupt.lark.exception.enums.ExceptionEnum;
 import com.cqupt.lark.execute.service.TestExecutorService;
 import com.cqupt.lark.util.EmitterSendUtils;
+import com.cqupt.lark.util.RecommendUtils;
 import com.cqupt.lark.util.SubStringUtils;
 import com.cqupt.lark.util.UrlStringAdder;
 import com.cqupt.lark.vector.model.dto.AnswerDTO;
@@ -67,6 +68,8 @@ public class NewUITestController {
                 throw new RuntimeException(e);
             }
 
+            RecommendUtils.setLastTestCase(cases[cases.length-1]);
+
             boolean isSuccess = false;
             for (String aCase : cases) {
                 AnswerDTO answer = searchVectorService.searchAnswer(request.getUrl(), aCase);
@@ -74,6 +77,7 @@ public class NewUITestController {
                     log.info("请求命中数据库");
                     try {
                         if (testExecutorService.executeWithAnswer(answer, browserPageSupport, aCase, emitter)) {
+                            isSuccess = true;
                             continue;
                         }
                     } catch (InterruptedException | IOException e) {

@@ -27,4 +27,6 @@ public interface Assistant {
     String chatWithVideoAndPicture(String InputMessage, MultipartFile image, MultipartFile video) throws IOException;
 
     String chatWithVideoAndPicture(String InputMessage, byte[] imageData, byte[] videoData) throws IOException;
+
+    String chatWithRecommend(String lastCase) throws IOException;
 }

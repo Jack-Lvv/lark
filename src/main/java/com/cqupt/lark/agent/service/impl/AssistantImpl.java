@@ -112,5 +112,20 @@ public class AssistantImpl implements Assistant {
         return model.chat(imageMessage, videoMessage, UserMessage.from(InputMessage)).aiMessage().text();
     }
 
+    @Override
+    public String chatWithRecommend(String lastCase) throws IOException {
+        String prompt;
+
+        try (InputStream inputStream = AssistantImpl.class
+                .getClassLoader()
+                .getResourceAsStream("prompt/recommend.txt")) {
+            if (inputStream == null) {
+                throw new IOException("文件不存在！");
+            }
+            prompt = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        return model.chat(SystemMessage.from(prompt), UserMessage.from(lastCase)).aiMessage().text();
+    }
+
 
 }

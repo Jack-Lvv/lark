@@ -301,7 +301,7 @@
             <div class="form-group">
                 <label for="description">测试用例步骤描述:</label>
                 <textarea id="description" name="description"
-                          placeholder="1. 点击登录按钮&#10;2. 输入用户名和密码&#10;3. 提交表单" required></textarea>
+                          placeholder="正在获取推荐步骤描述..." required></textarea>
             </div>
 
             <div class="form-group">
@@ -324,6 +324,44 @@
 
 
 <script>
+    // 页面加载时获取推荐文本
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取当前路径并构建API URL
+        const currentPath = window.location.pathname;
+        const apiUrl = currentPath + (currentPath.endsWith('/') ? 'api/recommend' : '/api/recommend');
+
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('获取推荐文本失败');
+                }
+                return response.text();
+            })
+            .then(text => {
+                // 设置placeholder
+                document.getElementById('description').placeholder = text;
+            })
+            .catch(error => {
+                console.error('获取推荐文本错误:', error);
+                // 设置默认值
+                document.getElementById('description').placeholder = "1. 点击登录按钮\n2. 输入用户名和密码\n3. 提交表单";
+            });
+    });
+
+    // 为description文本框添加Tab键填充功能
+    document.getElementById('description').addEventListener('keydown', function(event) {
+        if (event.key === 'Tab' || event.keyCode === 9) {
+            // 如果当前文本框内容为空
+            if (this.value.trim() === '') {
+                // 阻止默认Tab行为（切换焦点）
+                event.preventDefault();
+                // 将placeholder内容填充到文本框中
+                this.value = this.placeholder;
+                // 将光标定位到文本末尾
+                this.setSelectionRange(this.value.length, this.value.length);
+            }
+        }
+    });
     // sse截图流
     const eventSource = new EventSource(window.location.origin + "/screenshots");
 

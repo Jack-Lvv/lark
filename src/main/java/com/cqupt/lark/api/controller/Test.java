@@ -24,7 +24,7 @@ public class Test {
     private final ExecutorService executor;
 
     @GetMapping(value = "/api/test/v1")
-    public String test(RequestDTO request) throws InterruptedException {
+    public void test(RequestDTO request) throws InterruptedException {
 
         BrowserPageSupport browserPageSupport = browserSession.getBrowserPageSupport();
 
@@ -42,10 +42,6 @@ public class Test {
                     }
                 }
         );
-
-
-        System.out.println("成功");
-        return "成功";
 
     }
 }
