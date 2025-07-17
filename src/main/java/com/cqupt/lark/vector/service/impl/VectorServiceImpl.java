@@ -22,9 +22,7 @@ import io.milvus.v2.service.vector.response.SearchResp;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class VectorServiceImpl implements VectorService {
@@ -131,10 +129,15 @@ public class VectorServiceImpl implements VectorService {
         // 1. 生成查询向量
         float[] queryVector = embeddingModel.embed(query.toStringForVector()).content().vector();
 
+        Map<String,Object> extraParams = new HashMap<>();
+        extraParams.put("radius", 0.8);
+        extraParams.put("range_filter", 1);
+
         SearchReq searchReq = SearchReq.builder()
                 .collectionName("collection")
                 .data(Collections.singletonList(new FloatVec(queryVector)))
                 .topK(topK)
+                .searchParams(extraParams)
                 .build();
 
         SearchResp searchResp = milvusClient.search(searchReq);

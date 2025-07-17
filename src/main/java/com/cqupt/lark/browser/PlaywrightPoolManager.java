@@ -88,7 +88,8 @@ public class PlaywrightPoolManager {
         try {
             Browser browser = wrapper.pwt.chromium().launch();
             BrowserContext ctx = browser.newContext(new Browser.NewContextOptions()
-                    .setStorageStatePath(resourcesPath));
+                    .setStorageStatePath(resourcesPath)
+            );
             newPage = ctx.newPage();
         } finally {
             wrapper.lock.unlock();

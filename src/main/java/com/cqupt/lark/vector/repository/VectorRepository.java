@@ -11,4 +11,6 @@ public interface VectorRepository {
     List<QaRecord> findByVectorIdIn(String[] vectorIds);
 
     void wrongQaRecord(String vectorId);
+
+    void cleanUselessVectors();
 }

@@ -50,7 +50,7 @@ public abstract class AbstractAutoTestService implements AutoTestService {
             try {
                 byte[] oldScreenshot = browserPageSupport.screenshot();
                 if (executeTest(standardStr, browserPageSupport)) {
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                     testResult = validateService.validate(oldScreenshot, browserPageSupport.screenshot(), aCase);
                 } else {
                     testResult.setStatus(false);

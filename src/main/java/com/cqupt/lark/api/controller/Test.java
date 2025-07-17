@@ -29,19 +29,18 @@ public class Test {
         BrowserPageSupport browserPageSupport = browserSession.getBrowserPageSupport();
 
         executor.execute(() -> {
-                    try {
-                        browserPageSupport.navigate(UrlStringAdder.urlStrAdd(request.getUrl()));
-                        browserPageSupport.screenshot();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException();
-                    }
-                    try {
-                        browserPageSupport.close();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-        );
+            try {
+                browserPageSupport.navigate(UrlStringAdder.urlStrAdd(request.getUrl()));
+                browserPageSupport.screenshot();
+            } catch (InterruptedException e) {
+                throw new RuntimeException();
+            }
+            try {
+                browserPageSupport.close();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
     }
 }

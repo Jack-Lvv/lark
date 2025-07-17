@@ -54,7 +54,7 @@ public class NewUITestController {
 
             try {
                 browserPageSupport.navigate(UrlStringAdder.urlStrAdd(request.getUrl()));
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 throw new BusinessException(ExceptionEnum.NAVIGATE_ERROR);
             }
@@ -106,6 +106,12 @@ public class NewUITestController {
                     }
                 }
                 if (!isSuccess) {
+                    try {
+                        EmitterSendUtils.send(emitter, "result",
+                                false, "操作执行失败，请刷新页面重新尝试");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 }
             }

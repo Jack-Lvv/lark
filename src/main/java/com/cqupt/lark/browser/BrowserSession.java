@@ -1,6 +1,5 @@
 package com.cqupt.lark.browser;
 
-import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

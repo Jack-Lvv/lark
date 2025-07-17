@@ -10,4 +10,6 @@ public interface QaRecordMapper {
     QaRecord getByVectorId(String vectorId);
 
     void wrongQaRecord(String vectorId);
+
+    void cleanUselessQaRecord();
 }

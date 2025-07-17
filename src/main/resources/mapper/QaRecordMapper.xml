@@ -8,6 +8,9 @@
     <update id="wrongQaRecord">
         update qa_record set is_correct = false where vector_id = #{vectorId}
     </update>
+    <delete id="cleanUselessQaRecord">
+        delete from qa_record where is_correct = false
+    </delete>
     <select id="getByVectorId" resultType="com.cqupt.lark.vector.model.entity.QaRecord">
         select url, question, answer, is_correct, vector_id from qa_record where vector_id = #{vectorId}
     </select>

@@ -33,4 +33,9 @@ public class VectorRepositoryImpl implements VectorRepository {
         qaRecordMapper.wrongQaRecord(vectorId);
     }
 
+    @Override
+    public void cleanUselessVectors() {
+        qaRecordMapper.cleanUselessQaRecord();
+    }
+
 }

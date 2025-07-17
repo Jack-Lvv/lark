@@ -2,18 +2,21 @@ package com.cqupt.lark;
 
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiChatRequestParameters;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Map;
+
 @SpringBootTest
 public class TestGPTDemo {
 
-    @Value("${open-ai.doubao-vision.base-url}")
+    @Value("${open-ai.doubao.base-url}")
     private String baseUrl;
-    @Value("${open-ai.doubao-vision.api-key}")
+    @Value("${open-ai.doubao.api-key}")
     private String apiKey;
-    @Value("${open-ai.doubao-vision.model-name}")
+    @Value("${open-ai.doubao.model-name}")
     private String modelName;
 
 
@@ -23,10 +26,11 @@ public class TestGPTDemo {
                 .baseUrl(baseUrl)
                 .apiKey(apiKey)
                 .modelName(modelName)
-                .logRequests(true)
-                .logResponses(true)
+                .defaultRequestParameters(OpenAiChatRequestParameters.builder()
+                        .metadata(Map.of("thinking", "{\"type\":\"disabled\"}"))
+                        .build())
                 .build();
-        String answer = model.chat(UserMessage.from("你是什么模型")).aiMessage().text();
+        String answer = model.chat(UserMessage.from("你开启深度思考模式了吗")).aiMessage().text();
         System.out.println(answer);
     }
 

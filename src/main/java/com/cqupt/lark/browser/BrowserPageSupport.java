@@ -1,7 +1,6 @@
 package com.cqupt.lark.browser;
 
 import com.cqupt.lark.common.PriorityLock;
-import com.cqupt.lark.util.CompressImageUtils;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -70,9 +69,10 @@ public class BrowserPageSupport {
         try {
             byte[] screenshot = pageInstance.screenshot(new Page.ScreenshotOptions()
                     .setType(ScreenshotType.JPEG)
-                    .setQuality(80)
-                    .setFullPage(true));
-            return CompressImageUtils.compressImage(screenshot, 640, 360);
+                    //.setQuality(80)
+                    );
+            //return CompressImageUtils.compressImage(screenshot, 640, 360);
+            return screenshot;
         } catch (Exception e) {
             throw new RuntimeException( "图片压缩失败", e);
         } finally {
